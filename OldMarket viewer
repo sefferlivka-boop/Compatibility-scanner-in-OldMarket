@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>OldMarket — игры и приложения</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 1200px; margin: 20px auto; padding: 0 16px; }
+  #log { background: #f4f4f4; padding: 8px; border-radius: 6px; font-family: monospace; font-size: 12px; max-height: 120px; overflow-y: auto; white-space: pre-wrap; }
+  table { border-collapse: collapse; margin-top: 12px; width: 100%; font-size: 13px; }
+  th, td { border: 1px solid #ccc; padding: 4px 7px; text-align: left; vertical-align: top; }
+  th { background: #eee; position: sticky; top: 0; }
+  .green { background: #d4edda; } .yellow { background: #fff3cd; } .red { background: #f8d7da; } .blue { background: #d1ecf1; }
+  .good { font-weight: bold; }
+  a { color: #0066cc; }
+  #summary { margin-top: 12px; padding: 10px; background: #eef; border-radius: 6px; }
+  #chartWrap { margin-top: 20px; }
+  canvas { border: 1px solid #ccc; background: #fff; max-width: 100%; }
+  .legend { font-size: 13px; margin-top: 6px; }
+  .legend span { display: inline-block; padding: 2px 8px; margin-right: 12px; border-radius: 4px; }
+  .panel { margin: 12px 0; padding: 10px; background: #f9f9f9; border-radius: 6px; }
+  .panel label { margin-right: 14px; }
+  .hidden { display: none; }
+  select, input { margin: 2px 0; }
+</style>
+</head>
+<body>
+<h1>OldMarket — игры и приложения под телефон</h1>
+
+<div class="panel">
+  <label><b>Раздел:</b>
+    <select id="mode">
+      <option value="games">Игры</option>
+      <option value="apps">Приложения</option>
+    </select>
+  </label>
+  <label><b>Категория:</b>
+    <select id="category">
+      <option value="all">Все</option>
+      <optgroup label="Игры">
+        <option>Гонки</option><option>Симуляторы</option><option>Аркады</option>
+        <option>Головоломки</option><option>Экшн</option><option>Стратегии</option>
+        <option>Спорт</option><option>Казуальные</option><option>Карточные</option>
+        <option>Настольные</option><option>Приключения</option><option>RPG</option>
+      </optgroup>
+      <optgroup label="Приложения">
+        <option>Инструменты</option><option>Связь</option><option>Мультимедиа</option>
+        <option>Фото и видео</option><option>Музыка и аудио</option><option>Финансы</option>
+        <option>Здоровье</option><option>Путешествия</option><option>Образование</option>
+        <option>Бизнес</option><option>Погода</option><option>Новости</option>
+        <option>Социальные</option><option>Персонализация</option>
+      </optgroup>
+    </select>
+  </label>
+</div>
+
+<div class="panel">
+  <label><b>Телефон:</b>
+    <select id="preset">
+      <option value="x8">Sony Ericsson Xperia X8 / W8 (ARMv6, ≤2.2)</option>
+      <option value="x10">Sony Ericsson Xperia X10 (ARMv7, ≤2.3.3)</option>
+      <option value="x10mini">Sony Ericsson X10 mini / mini pro (ARMv6, ≤2.1)</option>
+      <option value="galaxys">Samsung Galaxy S (ARMv7, ≤2.3)</option>
+      <option value="galaxys2">Samsung Galaxy S II (ARMv7, ≤4.1)</option>
+      <option value="galaxys3">Samsung Galaxy S III (ARMv7, ≤4.4)</option>
+      <option value="xperiaj">Sony Xperia J (ARMv7, ≤4.1)</option>
+      <option value="xperiae">Sony Xperia E (ARMv7, ≤4.1)</option>
+      <option value="htcdesirehd">HTC Desire HD (ARMv7, ≤2.3)</option>
+      <option value="custom">Другой телефон (ввести вручную)</option>
+      <option value="any">Любой (без фильтра)</option>
+    </select>
+  </label>
+  <span id="presetInfo" style="font-size:13px; color:#555;"></span>
+</div>
+
+<div class="panel hidden" id="customPanel">
+  <b>Характеристики своего телефона:</b><br>
+  <label>Архитектура:
+    <select id="cArm"><option value="v6">ARMv6</option><option value="v7" selected>ARMv7</option></select>
+  </label>
+  <label>Процессор:
+    <select id="cCpu">
+      <option value="">— выбрать —</option>
+      <option>Qualcomm MSM7227 600 MHz (ARMv6)</option>
+      <option>Qualcomm MSM7227 800 MHz (ARMv6)</option>
+      <option>Qualcomm QSD8250 1 GHz (ARMv7)</option>
+      <option>Qualcomm MSM8255 1 GHz (ARMv7)</option>
+      <option>Samsung Hummingbird 1 GHz (ARMv7)</option>
+      <option>Samsung Exynos 4210 1.2 GHz (ARMv7)</option>
+      <option>Samsung Exynos 4412 1.4 GHz (ARMv7)</option>
+      <option>TI OMAP 3430 600 MHz (ARMv7)</option>
+      <option>TI OMAP 4430 1 GHz (ARMv7)</option>
+      <option>NVIDIA Tegra 2 1 GHz (ARMv7)</option>
+      <option>NVIDIA Tegra 3 1.2 GHz (ARMv7)</option>
+      <option>Broadcom BCM21553 832 MHz (ARMv6)</option>
+    </select>
+  </label>
+  <label>Частота, МГц:
+    <input id="cFreq" type="number" min="200" max="2500" step="50" value="1000" style="width:90px">
+  </label>
+  <label>Android (API):
+    <select id="cApi">
+      <option value="4">1.6 (API 4)</option>
+      <option value="7">2.1 (API 7)</option>
+      <option value="8">2.2 (API 8)</option>
+      <option value="10">2.3.3 (API 10)</option>
+      <option value="14">4.0 (API 14)</option>
+      <option value="16">4.1 (API 16)</option>
+      <option value="19">4.4 (API 19)</option>
+    </select>
+  </label>
+  <label>Производитель:
+    <input id="cVendor" type="text" placeholder="Sony / Samsung / HTC…" style="width:160px">
+  </label>
+</div>
+
+<button id="start">Начать сбор</button>
+<div id="log"></div>
+<div id="summary"></div>
+
+<div id="chartWrap">
+  <h2>График: по версиям Android</h2>
+  <div class="legend">
+    <span style="background:#888">Android 1.6 и ниже</span>
+    <span style="background:#e67e22">Android 2.1+</span>
+    <span style="background:#27ae60">Android 2.2+</span>
+    <span style="background:#2980b9">Android 2.3+</span>
+    <span style="background:#8e44ad">Android 4.0+ и выше</span>
+  </div>
+  <canvas id="chart" width="1000" height="400"></canvas>
+</div>
+
+<h2>Найденное</h2>
+<table id="result" style="display:none">
+  <thead><tr><th>Название</th><th>Жанр</th><th>Рейтинг</th><th>API</th><th>ARMv6</th><th>Стр.</th></tr></thead>
+  <tbody></tbody>
+</table>
+
+<script>
+// ---------- URL ----------
+const SITE = "https://ilyamarket.site/index.php?mode=";
+const MODES = { games: "games", apps: "apps" };
+const FETCH_TIMEOUT_MS = 10000;   // 10 секунд на запрос
+const PROBE_PAGE = 999999;        // заведомо большая страница
+
+// ---------- Пресеты ----------
+const PRESETS = {
+  x8:        { name:"Xperia X8/W8",        apiMax:8,  armv6:true,  note:"ARMv6, MSM7227 600MHz" },
+  x10:       { name:"Xperia X10",          apiMax:10, armv6:false, note:"ARMv7, QSD8250 1GHz" },
+  x10mini:   { name:"X10 mini / mini pro", apiMax:7,  armv6:true,  note:"ARMv6, MSM7227" },
+  galaxys:   { name:"Galaxy S",            apiMax:10, armv6:false, note:"ARMv7, Hummingbird" },
+  galaxys2:  { name:"Galaxy S II",         apiMax:16, armv6:false, note:"ARMv7, Exynos" },
+  galaxys3:  { name:"Galaxy S III",        apiMax:19, armv6:false, note:"ARMv7, Exynos" },
+  xperiaj:   { name:"Xperia J",            apiMax:16, armv6:false, note:"ARMv7" },
+  xperiae:   { name:"Xperia E",            apiMax:16, armv6:false, note:"ARMv7" },
+  htcdesirehd:{name:"HTC Desire HD",       apiMax:10, armv6:false, note:"ARMv7" },
+  any:       { name:"Любой",               apiMax:22, armv6:false, note:"Без фильтра" }
+};
+
+// ---------- Жанры ----------
+const GENRE_MAP = [
+  [/asphalt/i,"Гонки"],[/real racing/i,"Гонки"],[/gt racing/i,"Гонки"],
+  [/hill climb/i,"Гонки"],[/angry birds go/i,"Гонки"],[/sonic.*racing/i,"Гонки"],
+  [/jet car/i,"Гонки"],[/flashout/i,"Гонки"],[/trials frontier/i,"Гонки"],
+  [/sbk/i,"Гонки"],[/crazy taxi/i,"Гонки"],[/ridge racer/i,"Гонки"],
+  [/reckless racing/i,"Гонки"],[/payback/i,"Гонки"],[/zombie highway/i,"Гонки"],
+  [/offroad legends/i,"Гонки"],[/adrenaline rush/i,"Гонки"],[/blocky roads/i,"Гонки"],
+  [/re-volt/i,"Гонки"],[/carmageddon/i,"Гонки"],[/need for speed/i,"Гонки"],
+  [/the sims/i,"Симуляторы"],[/game dev story/i,"Симуляторы"],[/plague inc/i,"Симуляторы"],
+  [/surgeon simulator/i,"Симуляторы"],[/rollercoaster tycoon/i,"Симуляторы"],
+  [/godus/i,"Симуляторы"],[/mountain/i,"Симуляторы"],[/deer hunter/i,"Симуляторы"],
+  [/dino hunter/i,"Симуляторы"],[/infinite flight/i,"Симуляторы"],[/true skate/i,"Симуляторы"],
+  [/new star soccer/i,"Симуляторы"],[/top eleven/i,"Симуляторы"],[/simcity/i,"Симуляторы"],
+  [/city story/i,"Симуляторы"],[/fashion story/i,"Симуляторы"],
+  [/subway surf/i,"Аркады"],[/angry birds/i,"Аркады"],[/worms/i,"Аркады"],
+  [/smash hit/i,"Аркады"],[/ridiculous fishing/i,"Аркады"],[/hopeless/i,"Аркады"],
+  [/voxel rush/i,"Аркады"],[/unpossible/i,"Аркады"],[/cytus/i,"Аркады"],
+  [/sparkle/i,"Аркады"],[/sky gamblers/i,"Аркады"],[/fractal combat/i,"Аркады"],
+  [/star wars pinball/i,"Аркады"],[/tilt to live/i,"Аркады"],[/colossatron/i,"Аркады"],
+  [/rayman fiesta/i,"Аркады"],[/gunman clive/i,"Аркады"],[/garfield kart/i,"Аркады"],
+  [/pac-man/i,"Аркады"],[/ninjump/i,"Аркады"],
+  [/world of goo/i,"Головоломки"],[/bad piggies/i,"Головоломки"],
+  [/cut the rope/i,"Головоломки"],[/candy crush/i,"Головоломки"],
+  [/super hexagon/i,"Головоломки"],[/the room/i,"Головоломки"],
+  [/machinarium/i,"Головоломки"],[/little inferno/i,"Головоломки"],
+  [/year walk/i,"Головоломки"],[/duet game/i,"Головоломки"],[/blek/i,"Головоломки"],
+  [/the cave/i,"Головоломки"],[/icebreaker/i,"Головоломки"],[/incredipede/i,"Головоломки"],
+  [/rube works/i,"Головоломки"],[/atlantis adventure/i,"Головоломки"],
+  [/plants vs zombies/i,"Головоломки"],[/puzzle quest/i,"Головоломки"],
+  [/modern combat/i,"Экшн"],[/shadowgun/i,"Экшн"],[/n.o.v.a/i,"Экшн"],
+  [/mass effect/i,"Экшн"],[/amazing spider-man/i,"Экшн"],[/dark knight rises/i,"Экшн"],
+  [/max payne/i,"Экшн"],[/grand theft auto/i,"Экшн"],[/gta/i,"Экшн"],
+  [/gangstar/i,"Экшн"],[/dead trigger/i,"Экшн"],[/dead effect/i,"Экшн"],
+  [/deus ex/i,"Экшн"],[/batman/i,"Экшн"],[/injustice/i,"Экшн"],
+  [/teenage mutant/i,"Экшн"],[/walking dead/i,"Экшн"],[/roblox/i,"Экшн"],
+  [/terraria/i,"Экшн"],[/minecraft/i,"Экшн"],
+  [/xcom/i,"Стратегии"],[/great big war/i,"Стратегии"],[/great little war/i,"Стратегии"],
+  [/squids/i,"Стратегии"],[/frozen synapse/i,"Стратегии"],[/crimson.*steam/i,"Стратегии"],
+  [/guns.*glory/i,"Стратегии"],[/robo defense/i,"Стратегии"],[/battle for mars/i,"Стратегии"],
+  [/military madness/i,"Стратегии"],[/everlands/i,"Стратегии"],[/spaceteam/i,"Стратегии"],
+  [/arma tactics/i,"Стратегии"],
+  [/final fantasy/i,"RPG"],[/world ends with you/i,"RPG"],[/aralon/i,"RPG"],
+  [/dungeon hunter/i,"RPG"],[/tales of/i,"RPG"],[/adventure bar/i,"RPG"],
+  [/fifa/i,"Спорт"],[/pes/i,"Спорт"],[/nba/i,"Спорт"],[/nhl/i,"Спорт"],
+  [/madden/i,"Спорт"],[/tennis/i,"Спорт"],[/golf/i,"Спорт"],[/football/i,"Спорт"],
+  [/soccer/i,"Спорт"],[/basketball/i,"Спорт"],
+  [/solitaire/i,"Карточные"],[/poker/i,"Карточные"],[/blackjack/i,"Карточные"],
+  [/chess/i,"Настольные"],[/checkers/i,"Настольные"],[/backgammon/i,"Настольные"],
+  [/monopoly/i,"Настольные"],[/scrabble/i,"Настольные"],
+  [/doodle jump/i,"Казуальные"],[/fruit ninja/i,"Казуальные"],[/flappy bird/i,"Казуальные"],
+  [/temple run/i,"Казуальные"],[/jetpack joyride/i,"Казуальные"],[/pou/i,"Казуальные"],
+  [/talking tom/i,"Казуальные"],[/говорящий том/i,"Казуальные"],[/говорящий бен/i,"Казуальные"],
+  [/myst/i,"Приключения"],[/riven/i,"Приключения"],[/broken sword/i,"Приключения"],
+  [/monkey island/i,"Приключения"],[/sam.*max/i,"Приключения"]
+];
+function detectGenre(name){
+  for (const [re, g] of GENRE_MAP) if (re.test(name)) return g;
+  return null;
+}
+
+// ---------- Состояние ----------
+const seen = new Set();
+const all = [];
+let total=0, okPages=0, failPages=0, filteredBeta=0;
+
+// ---------- UI ----------
+const $ = id => document.getElementById(id);
+const logEl = $("log");
+function log(m){ logEl.textContent += m+"\n"; logEl.scrollTop = logEl.scrollHeight; }
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+function updatePresetInfo(){
+  const k = $("preset").value;
+  if (k === "custom") { $("customPanel").classList.remove("hidden"); $("presetInfo").textContent = "— введите характеристики ниже"; return; }
+  $("customPanel").classList.add("hidden");
+  const p = PRESETS[k];
+  $("presetInfo").textContent = p ? p.note : "";
+}
+$("preset").addEventListener("change", updatePresetInfo);
+
+function getPreset(){
+  const k = $("preset").value;
+  if (k === "custom") {
+    const armv6 = $("cArm").value === "v6";
+    const apiMax = parseInt($("cApi").value, 10);
+    const vendor = $("cVendor").value || "Custom";
+    const cpu = $("cCpu").value || ($("cFreq").value + " MHz");
+    return { name: vendor + " (" + cpu + ")", apiMax, armv6 };
+  }
+  return { key:k, ...PRESETS[k] };
+}
+
+// ---------- Загрузка с таймаутом ----------
+async function fetchPage(mode, page, timeoutMs = FETCH_TIMEOUT_MS){
+  const url = SITE + MODES[mode] + "&page=" + page;
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+  try {
+    const r = await fetch(url, { credentials:"omit", signal: ctrl.signal });
+    clearTimeout(timer);
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    // Возвращаем и текст, и финальный URL (после редиректа)
+    return { html: await r.text(), finalUrl: r.url || url, ok: true };
+  } catch (e) {
+    clearTimeout(timer);
+    // Пробуем прокси (без таймаута на прокси, но с общим лимитом)
+    try {
+      const p = "https://api.allorigins.win/raw?url=" + encodeURIComponent(url);
+      const ctrl2 = new AbortController();
+      const t2 = setTimeout(() => ctrl2.abort(), timeoutMs);
+      const r2 = await fetch(p, { signal: ctrl2.signal });
+      clearTimeout(t2);
+      if (!r2.ok) throw new Error("proxy " + r2.status);
+      return { html: await r2.text(), finalUrl: url, ok: true };
+    } catch (e2) {
+      return { html: null, finalUrl: url, ok: false, error: e.message };
+    }
+  }
+}
+
+// ---------- Определение числа страниц ----------
+function detectFromText(html){
+  const m = html.match(/Страница\s+\d+\s+из\s+(\d+)/i);
+  if (m) return parseInt(m[1], 10);
+  const m2 = html.match(/\bиз\s+(\d+)\b/i);
+  if (m2) return parseInt(m2[1], 10);
+  return null;
+}
+
+// Извлекаем номер страницы из URL (после редиректа)
+function pageFromUrl(url){
+  try {
+    const u = new URL(url);
+    const p = u.searchParams.get("page");
+    if (p) {
+      const n = parseInt(p, 10);
+      if (!isNaN(n) && n > 0) return n;
+    }
+  } catch {}
+  // Иногда редирект может быть на другой формат — пробуем найти "page=N" в строке
+  const m = url.match(/[?&]page=(\d+)/i);
+  if (m) return parseInt(m[1], 10);
+  return null;
+}
+
+// Основная функция: определяем последнюю страницу
+async function determineLastPage(mode){
+  log("→ определяю число страниц (способ 1: надпись «Страница X из Y»)...");
+  const first = await fetchPage(mode, 1, FETCH_TIMEOUT_MS);
+
+  // Если первая страница вообще не загрузилась — сразу пробуем probe
+  if (first.ok && first.html) {
+    const fromText = detectFromText(first.html);
+    if (fromText) {
+      log("✓ способ 1 сработал: " + fromText + " страниц");
+      return { lastPage: fromText, firstHtml: first.html, firstUrl: first.finalUrl };
+    }
+    log("⚠ надпись не найдена, пробую способ 2 (probe page=999999)...");
+  } else {
+    log("⚠ первая страница не загрузилась (" + (first.error || "таймаут") + "), пробую probe...");
+  }
+
+  // Способ 2: запрашиваем заведомо большую страницу
+  const probe = await fetchPage(mode, PROBE_PAGE, FETCH_TIMEOUT_MS);
+  if (!probe.ok || !probe.html) {
+    // Если и probe не удался — fallback по разделу
+    const fallback = mode === "games" ? 96 : 67;
+    log("✗ probe не удался, беру fallback: " + fallback);
+    return { lastPage: fallback, firstHtml: first.ok ? first.html : null, firstUrl: first.finalUrl };
+  }
+
+  // Пытаемся вытащить номер из финального URL
+  let fromUrl = pageFromUrl(probe.finalUrl);
+  if (fromUrl && fromUrl !== PROBE_PAGE) {
+    log("✓ способ 2 сработал (URL): последняя страница = " + fromUrl);
+    // Если первая страница не загрузилась, но probe дал HTML — используем его как «первую»
+    return { lastPage: fromUrl, firstHtml: first.ok ? first.html : null, firstUrl: first.finalUrl, probeHtml: probe.html };
+  }
+
+  // Если редиректа не было (URL остался с page=999999) — пробуем найти номер в тексте
+  const fromProbeText = detectFromText(probe.html);
+  if (fromProbeText) {
+    log("✓ способ 2 сработал (текст probe): " + fromProbeText);
+    return { lastPage: fromProbeText, firstHtml: first.ok ? first.html : null, firstUrl: first.finalUrl };
+  }
+
+  // Если страница с page=999999 вернула пустоту или ошибку — возможно, сайт не редиректит
+  // Тогда сканируем вручную вверх/вниз — но это дорого. Fallback:
+  const fallback = mode === "games" ? 96 : 67;
+  log("⚠ не удалось определить, беру fallback: " + fallback);
+  return { lastPage: fallback, firstHtml: first.ok ? first.html : null, firstUrl: first.finalUrl };
+}
+
+// ---------- Парсинг ----------
+function parseItems(html, pageNum){
+  const doc = new DOMParser().parseFromString(html, "text/html");
+  const lines = (doc.body ? doc.body.innerText : "").split("\n").map(s=>s.trim()).filter(Boolean);
+  const items = [];
+  for (let i=0;i<lines.length;i++){
+    const m = lines[i].match(/^API\s+(\d+)\s*\(/);
+    if (!m) continue;
+    const api = parseInt(m[1],10);
+    let name=null, rating=null;
+    for (let j=i-1;j>=0 && j>=i-6;j--){
+      const l=lines[j];
+      const rm=l.match(/^Рейтинг:\s*([\d.]+)/);
+      if (rm){ rating=parseFloat(rm[1]); continue; }
+      if (/^Скачиваний:/.test(l)||/^API\s/.test(l)) continue;
+      name=l; break;
+    }
+    if (name) items.push({ name, rating, api, foundOnPage: pageNum });
+  }
+  return items;
+}
+
+// ---------- ARMv6 ----------
+const BETA_RE = /\b(beta|alpha|demo|preview|test|early access|бета|альфа|демо|тест)\b/i;
+const KNOWN_ARMV7 = [/minecraft/i,/subway surf/i,/geometry dash/i,/plants vs zombies/i,/temple run/i,/cut the rope/i,/fruit ninja/i,/angry birds/i,/doodle jump/i,/hungry shark/i,/modern combat/i,/real racing/i,/need for speed/i,/asphalt/i];
+const KNOWN_X8_WORK = [/cuttheburmalda/i,/burmaldamods/i,/peKORA/i,/говорящий бен/i,/говорящий том/i,/говорящая анджела/i,/говорящий ларри/i,/говорящий санта/i,/talking roby/i,/talking tom bubble/i,/retro brawl/i,/exploration/i,/rover craft/i,/doodle army/i,/джинджер/i,/говорящий хиппо/i,/angry viking/i,/train crisis/i,/inertia/i,/escape velocity/i];
+function looksHeavy(n){ return /3d|hd|race|racing|shooter|fps|mmo|online|battle royale|pubg|asphalt|need for speed|modern combat/i.test(n.toLowerCase()); }
+function classifyArmv6(name, api){
+  if (api>8) return "red";
+  if (api<8) return looksHeavy(name)?"blue":"green";
+  for (const re of KNOWN_ARMV7) if (re.test(name)) return "red";
+  for (const re of KNOWN_X8_WORK) if (re.test(name)) return "green";
+  if (looksHeavy(name)) return "yellow";
+  return "blue";
+}
+
+// ---------- Живой вывод ----------
+function appendRow(g, preset, selectedCat){
+  if (selectedCat !== "all" && g.genre !== selectedCat) return;
+  const tb = document.querySelector("#result tbody");
+  const tr = document.createElement("tr");
+  tr.className = g.arm === "green" ? "green" : g.arm === "yellow" ? "yellow" : g.arm === "red" ? "red" : "blue";
+  const r = g.rating!=null ? g.rating.toFixed(1) : "—";
+  const star = (g.rating||0)>=4 ? " ⭐" : "";
+  const arm = preset.armv6 ? armLabel(g.arm) : "—";
+  const pageUrl = SITE + MODES[$("mode").value] + "&page=" + g.foundOnPage;
+  tr.innerHTML = `<td class="${g.rating>=4?'good':''}">${g.name}${star}</td><td>${g.genre||"—"}</td><td>${r}</td><td>${g.api}</td><td>${arm}</td><td><a href="${pageUrl}" target="_blank">стр. ${g.foundOnPage}</a></td>`;
+  tb.appendChild(tr);
+  $("result").style.display = "table";
+}
+function armLabel(a){ return a==="green"?"🟢 пойдёт":a==="yellow"?"🟡 может":a==="red"?"🔴 нет":"🔵 ?"; }
+
+// ---------- Основной цикл ----------
+async function run(){
+  const mode = $("mode").value;
+  const category = $("category").value;
+  const preset = getPreset();
+
+  $("start").disabled = true;
+  logEl.textContent = ""; $("summary").innerHTML = "";
+  document.querySelector("#result tbody").innerHTML = "";
+  seen.clear(); all.length = 0;
+  total=0; okPages=0; failPages=0; filteredBeta=0;
+  drawChart();
+
+  // Определяем число страниц
+  const det = await determineLastPage(mode);
+  const lastPage = det.lastPage;
+
+  // Обрабатываем первую страницу, если она загрузилась
+  if (det.firstHtml) {
+    const firstItems = parseItems(det.firstHtml, 1);
+    okPages++;
+    for (const g of firstItems){
+      const key=g.name.toLowerCase().trim();
+      if (seen.has(key)) continue;
+      seen.add(key);
+      if (BETA_RE.test(g.name)){ filteredBeta++; continue; }
+      g.genre = detectGenre(g.name);
+      g.arm = classifyArmv6(g.name, g.api);
+      all.push(g); total++;
+      if (g.api <= preset.apiMax) appendRow(g, preset, category);
+    }
+    updateSummary(preset, category, mode);
+    drawChart();
+    await sleep(300);
+  } else {
+    log("⚠ первая страница не загрузилась, начинаю со 2-й");
+  }
+
+  // Остальные страницы
+  for (let p=2; p<=lastPage; p++){
+    log(`→ ${p}/${lastPage}...`);
+    const res = await fetchPage(mode, p);
+    if (!res.ok || !res.html){ failPages++; await sleep(500); continue; }
+    const items = parseItems(res.html, p);
+    if (!items.length){ failPages++; await sleep(500); continue; }
+    okPages++;
+    let added=0;
+    for (const g of items){
+      const key=g.name.toLowerCase().trim();
+      if (seen.has(key)) continue;
+      seen.add(key);
+      if (BETA_RE.test(g.name)){ filteredBeta++; continue; }
+      g.genre = detectGenre(g.name);
+      g.arm = classifyArmv6(g.name, g.api);
+      all.push(g); total++; added++;
+      if (g.api <= preset.apiMax) appendRow(g, preset, category);
+    }
+    log(`  ✓ +${added}`);
+    updateSummary(preset, category, mode);
+    drawChart();
+    await sleep(500);
+  }
+  updateSummary(preset, category, mode);
+  drawChart();
+  $("start").disabled = false;
+}
+
+// ---------- Сводка ----------
+function updateSummary(preset, category, mode){
+  let matching = all.filter(g => g.api <= preset.apiMax);
+  if (category !== "all") matching = matching.filter(g => g.genre === category);
+  const good = matching.filter(g => (g.rating||0)>=4);
+  const green = matching.filter(g => g.arm==="green");
+  const yellow = matching.filter(g => g.arm==="yellow");
+
+  let html = `<b>Раздел:</b> ${mode==="games"?"Игры":"Приложения"} | `;
+  html += `<b>Категория:</b> ${category} | `;
+  html += `<b>Телефон:</b> ${preset.name} (API ≤ ${preset.apiMax})<br>`;
+  html += `Страниц: ${okPages} ок, ${failPages} ошибок<br>`;
+  html += `Уникальных всего: <b>${total}</b><br>`;
+  html += `Подходят (API + категория): <b>${matching.length}</b><br>`;
+  html += `«Хорошие» (≥4★): <b>${good.length}</b><br>`;
+  if (preset.armv6){
+    html += `🟢 ARMv6 точно: <b>${green.length}</b><br>`;
+    html += `🟡 ARMv6 может: <b>${yellow.length}</b><br>`;
+  }
+  if (good.length){
+    html += `<br><b>Хорошие:</b><br>`;
+    html += good.slice(0,60).map(g=>{
+      const icon = preset.armv6 ? (g.arm==="green"?"🟢":g.arm==="yellow"?"🟡":g.arm==="red"?"🔴":"🔵") : "•";
+      return `${icon} ${g.name} — ${g.rating.toFixed(1)}★ (${g.genre||"?"}, API ${g.api}, стр. ${g.foundOnPage})`;
+    }).join("<br>");
+    if (good.length>60) html += `<br>… и ещё ${good.length-60}`;
+  }
+  $("summary").innerHTML = html;
+}
+
+// ---------- График ----------
+const GROUPS = [
+  {label:"Android 1.6 и ниже", color:"#888",    test:a=>a<=4},
+  {label:"Android 2.1+",       color:"#e67e22", test:a=>a===7},
+  {label:"Android 2.2+",       color:"#27ae60", test:a=>a===8},
+  {label:"Android 2.3+",       color:"#2980b9", test:a=>a===9||a===10},
+  {label:"Android 4.0+ и выше",color:"#8e44ad", test:a=>a>=14}
+];
+function drawChart(){
+  const c = $("chart"), ctx = c.getContext("2d");
+  const W=c.width, H=c.height; ctx.clearRect(0,0,W,H);
+  const counts = GROUPS.map(gr => all.filter(g=>gr.test(g.api)).length);
+  const maxC = Math.max(1,...counts);
+  const pL=60,pR=20,pT=20,pB=60, pw=W-pL-pR, ph=H-pT-pB;
+
+  ctx.strokeStyle="#999"; ctx.beginPath(); ctx.moveTo(pL,pT); ctx.lineTo(pL,H-pB); ctx.lineTo(W-pR,H-pB); ctx.stroke();
+  ctx.fillStyle="#666"; ctx.font="12px sans-serif"; ctx.textAlign="right";
+  for(let i=0;i<=5;i++){ const v=Math.round(maxC*i/5); const y=H-pB-ph*i/5; ctx.fillText(v,pL-6,y+4); ctx.strokeStyle="#eee"; ctx.beginPath(); ctx.moveTo(pL,y); ctx.lineTo(W-pR,y); ctx.stroke(); }
+  ctx.textAlign="center"; ctx.fillStyle="#333";
+  const sx = pw/(GROUPS.length-1||1);
+  GROUPS.forEach((gr,i)=>{ const x=pL+sx*i; const w=gr.label.split(" "); ctx.fillText(w[0],x,H-pB+18); ctx.fillText(w.slice(1).join(" "),x,H-pB+34); });
+  ctx.strokeStyle="#27ae60"; ctx.lineWidth=2; ctx.beginPath();
+  GROUPS.forEach((gr,i)=>{ const x=pL+sx*i; const y=H-pB-ph*counts[i]/maxC; i?ctx.lineTo(x,y):ctx.moveTo(x,y); });
+  ctx.stroke();
+  GROUPS.forEach((gr,i)=>{ const x=pL+sx*i; const y=H-pB-ph*counts[i]/maxC; ctx.fillStyle=gr.color; ctx.beginPath(); ctx.arc(x,y,5,0,Math.PI*2); ctx.fill(); ctx.fillStyle="#000"; ctx.font="bold 12px sans-serif"; ctx.fillText(counts[i],x,y-10); });
+  ctx.fillStyle="#000"; ctx.font="bold 14px sans-serif"; ctx.textAlign="left"; ctx.fillText("Количество по версиям Android",pL,pT-4);
+}
+
+// ---------- Старт ----------
+$("start").addEventListener("click", run);
+updatePresetInfo();
+drawChart();
+</script>
+</body>
+</html>

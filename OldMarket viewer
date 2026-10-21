@@ -2,38 +2,69 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>OldMarket — игры и приложения</title>
 <style>
-  body { font-family: system-ui, sans-serif; max-width: 1200px; margin: 20px auto; padding: 0 16px; }
-  #log { background: #f4f4f4; padding: 8px; border-radius: 6px; font-family: monospace; font-size: 12px; max-height: 120px; overflow-y: auto; white-space: pre-wrap; }
-  table { border-collapse: collapse; margin-top: 12px; width: 100%; font-size: 13px; }
-  th, td { border: 1px solid #ccc; padding: 4px 7px; text-align: left; vertical-align: top; }
+  :root {
+    --bg: #ffffff; --fg: #222222; --border: #cccccc; --panel: #f9f9f9;
+    --green: #d4edda; --yellow: #fff3cd; --red: #f8d7da; --blue: #d1ecf1; --good: #fff3cd;
+    --btn: #0066cc; --btn-text: #ffffff; --btn-danger: #dc3545;
+  }
+  body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 12px; background: var(--bg); color: var(--fg); font-size: 15px; line-height: 1.4; }
+  h1 { font-size: 1.3em; margin: 0 0 10px; }
+  h2 { font-size: 1.1em; margin: 15px 0 8px; }
+  #log { background: var(--panel); padding: 8px; border-radius: 6px; font-family: monospace; font-size: 11px; max-height: 100px; overflow-y: auto; white-space: pre-wrap; border: 1px solid var(--border); }
+  table { border-collapse: collapse; margin-top: 10px; width: 100%; font-size: 13px; }
+  th, td { border: 1px solid var(--border); padding: 6px 8px; text-align: left; vertical-align: top; }
   th { background: #eee; position: sticky; top: 0; }
-  .green { background: #d4edda; } .yellow { background: #fff3cd; } .red { background: #f8d7da; } .blue { background: #d1ecf1; }
-  .good { font-weight: bold; }
-  a { color: #0066cc; }
-  #summary { margin-top: 12px; padding: 10px; background: #eef; border-radius: 6px; }
-  #chartWrap { margin-top: 20px; }
-  canvas { border: 1px solid #ccc; background: #fff; max-width: 100%; }
-  .legend { font-size: 13px; margin-top: 6px; }
-  .legend span { display: inline-block; padding: 2px 8px; margin-right: 12px; border-radius: 4px; }
-  .panel { margin: 12px 0; padding: 10px; background: #f9f9f9; border-radius: 6px; }
-  .panel label { margin-right: 14px; }
-  .hidden { display: none; }
-  select, input { margin: 2px 0; }
+  .green { background: var(--green); } .yellow { background: var(--yellow); } .red { background: var(--red); } .blue { background: var(--blue); }
+  .good { font-weight: bold; background: var(--good); }
+  a { color: var(--btn); text-decoration: none; }
+  #summary { margin-top: 10px; padding: 10px; background: #eef; border-radius: 6px; font-size: 14px; }
+  #chartWrap { margin-top: 20px; display: none; }
+  canvas { border: 1px solid var(--border); background: #fff; width: 100%; height: auto; }
+  .legend { font-size: 12px; margin-bottom: 8px; display: flex; flex-wrap: wrap; gap: 5px; }
+  .legend span { padding: 2px 6px; border-radius: 4px; }
+  .panel { margin: 10px 0; padding: 10px; background: var(--panel); border-radius: 6px; border: 1px solid var(--border); }
+  .panel label { display: block; margin-bottom: 8px; font-weight: bold; }
+  .panel select, .panel input[type="text"], .panel input[type="number"] { width: 100%; padding: 8px; border-radius: 4px; border: 1px solid var(--border); font-size: 15px; box-sizing: border-box; margin-top: 4px; }
+  .hidden { display: none !important; }
+  
+  .btn-row { display: flex; gap: 10px; margin-top: 10px; }
+  button { flex: 1; padding: 14px; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; color: #fff; }
+  button#start { background: var(--btn); }
+  button#cancel { background: var(--btn-danger); }
+  button:disabled { opacity: 0.6; cursor: default; }
+
+  #progressWrap { margin-top: 12px; display: none; }
+  #progressBarContainer { background: #eee; border-radius: 6px; height: 16px; border: 1px solid var(--border); overflow: hidden; }
+  #progressBar { background: var(--btn); height: 100%; width: 0%; transition: width 0.2s; }
+  #progressText { font-size: 13px; color: #555; text-align: center; margin-top: 6px; font-weight: bold; }
+
+  #resultWrap { display: none; margin-top: 15px; }
+  .icon-cell img { width: 24px; height: 24px; vertical-align: middle; margin-right: 5px; border-radius: 4px; }
+
+  .settings-panel { margin-top: 30px; padding: 15px; background: #f4f4f4; border-radius: 6px; font-size: 13px; border-top: 2px solid var(--border); }
+  .settings-panel label { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-weight: normal; cursor: pointer; }
+  .settings-panel input[type="checkbox"] { width: 18px; height: 18px; }
+
+  @media (max-width: 600px) {
+    .col-hide-mobile { display: none; }
+    th, td { padding: 4px 5px; font-size: 12px; }
+  }
 </style>
 </head>
 <body>
-<h1>OldMarket — игры и приложения под телефон</h1>
+<h1>OldMarket — игры и приложения</h1>
 
 <div class="panel">
-  <label><b>Раздел:</b>
+  <label>Раздел:
     <select id="mode">
       <option value="games">Игры</option>
       <option value="apps">Приложения</option>
     </select>
   </label>
-  <label><b>Категория:</b>
+  <label>Категория:
     <select id="category">
       <option value="all">Все</option>
       <optgroup label="Игры">
@@ -51,10 +82,7 @@
       </optgroup>
     </select>
   </label>
-</div>
-
-<div class="panel">
-  <label><b>Телефон:</b>
+  <label>Телефон:
     <select id="preset">
       <option value="x8">Sony Ericsson Xperia X8 / W8 (ARMv6, ≤2.2)</option>
       <option value="x10">Sony Ericsson Xperia X10 (ARMv7, ≤2.3.3)</option>
@@ -69,11 +97,10 @@
       <option value="any">Любой (без фильтра)</option>
     </select>
   </label>
-  <span id="presetInfo" style="font-size:13px; color:#555;"></span>
+  <span id="presetInfo" style="font-size:12px; color:#555; display:block; margin-bottom:8px;"></span>
 </div>
 
 <div class="panel hidden" id="customPanel">
-  <b>Характеристики своего телефона:</b><br>
   <label>Архитектура:
     <select id="cArm"><option value="v6">ARMv6</option><option value="v7" selected>ARMv7</option></select>
   </label>
@@ -95,7 +122,7 @@
     </select>
   </label>
   <label>Частота, МГц:
-    <input id="cFreq" type="number" min="200" max="2500" step="50" value="1000" style="width:90px">
+    <input id="cFreq" type="number" min="200" max="2500" step="50" value="1000">
   </label>
   <label>Android (API):
     <select id="cApi">
@@ -109,38 +136,81 @@
     </select>
   </label>
   <label>Производитель:
-    <input id="cVendor" type="text" placeholder="Sony / Samsung / HTC…" style="width:160px">
+    <input id="cVendor" type="text" placeholder="Sony / Samsung / HTC…">
   </label>
 </div>
 
-<button id="start">Начать сбор</button>
+<div class="btn-row">
+  <button id="start">Начать сбор</button>
+  <button id="cancel" class="hidden">Отмена</button>
+</div>
+
+<div id="progressWrap">
+  <div id="progressBarContainer">
+    <div id="progressBar"></div>
+  </div>
+  <div id="progressText">0 / 0</div>
+</div>
+
 <div id="log"></div>
 <div id="summary"></div>
 
-<div id="chartWrap">
-  <h2>График: по версиям Android</h2>
-  <div class="legend">
-    <span style="background:#888">Android 1.6 и ниже</span>
-    <span style="background:#e67e22">Android 2.1+</span>
-    <span style="background:#27ae60">Android 2.2+</span>
-    <span style="background:#2980b9">Android 2.3+</span>
-    <span style="background:#8e44ad">Android 4.0+ и выше</span>
+<div id="resultWrap">
+  
+  <div id="recommendedWrap" class="hidden" style="margin-top: 15px; padding: 10px; background: #e0f2fe; border: 1px solid #bae6fd; border-radius: 6px;">
+    <h2 style="margin-top: 0; color: #0369a1;">✨ Специально для вас</h2>
+    <p style="font-size: 12px; color: #555; margin-bottom: 8px;">На основе ваших самых частых открытий в жанрах.</p>
+    <table style="margin-top: 0;">
+      <thead><tr><th>Название</th><th class="col-hide-mobile">Жанр</th><th>Рейтинг</th><th>API</th><th>ARMv6</th><th>Стр.</th></tr></thead>
+      <tbody id="recBody"></tbody>
+    </table>
   </div>
-  <canvas id="chart" width="1000" height="400"></canvas>
+
+  <div id="chartWrap">
+    <h2>График: игры по версиям Android</h2>
+    <div class="legend">
+      <span style="background:#888; color:#fff;">1.6−</span>
+      <span style="background:#e67e22;">2.1+</span>
+      <span style="background:#27ae60; color:#fff;">2.2+</span>
+      <span style="background:#2980b9; color:#fff;">2.3+</span>
+      <span style="background:#8e44ad; color:#fff;">4.0+</span>
+    </div>
+    <canvas id="chart" width="1000" height="400"></canvas>
+  </div>
+
+  <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 20px; flex-wrap: wrap; gap: 10px;">
+    <h2>Найденное</h2>
+    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+      <input type="text" id="searchInput" placeholder="Поиск по названию..." style="padding: 6px; border-radius: 4px; border: 1px solid #ccc; width: 200px;">
+      <select id="sortSelect" style="padding: 6px; border-radius: 4px; border: 1px solid #ccc;">
+        <option value="none">Без сортировки</option>
+        <option value="name">По имени (A-Z, А-Я)</option>
+        <option value="rating">По рейтингу (высокий)</option>
+      </select>
+    </div>
+  </div>
+
+  <table id="result">
+    <thead><tr><th>Название</th><th class="col-hide-mobile">Жанр</th><th>Рейтинг</th><th>API</th><th>ARMv6</th><th>Стр.</th></tr></thead>
+    <tbody></tbody>
+  </table>
 </div>
 
-<h2>Найденное</h2>
-<table id="result" style="display:none">
-  <thead><tr><th>Название</th><th>Жанр</th><th>Рейтинг</th><th>API</th><th>ARMv6</th><th>Стр.</th></tr></thead>
-  <tbody></tbody>
-</table>
+<div class="settings-panel">
+  <label><input type="checkbox" id="optIcons"> Показывать иконки игр (медленнее)</label>
+  <label><input type="checkbox" id="optRecommend" checked> Показывать блок «Специально для вас»</label>
+  <div style="margin-top: 15px; text-align: center; color: #666; font-size: 11px;">
+    Seffer's idea, made with DEEPSEEK
+  </div>
+</div>
 
 <script>
-// ---------- URL ----------
+// ---------- База URL ----------
 const SITE = "https://ilyamarket.site/index.php?mode=";
 const MODES = { games: "games", apps: "apps" };
-const FETCH_TIMEOUT_MS = 10000;   // 10 секунд на запрос
-const PROBE_PAGE = 999999;        // заведомо большая страница
+const BIG_PAGE = 999999;
+const CACHE_KEY = "oldmarket_cache_v2";
+const PREFS_KEY = "oldmarket_prefs";
 
 // ---------- Пресеты ----------
 const PRESETS = {
@@ -158,69 +228,63 @@ const PRESETS = {
 
 // ---------- Жанры ----------
 const GENRE_MAP = [
-  [/asphalt/i,"Гонки"],[/real racing/i,"Гонки"],[/gt racing/i,"Гонки"],
-  [/hill climb/i,"Гонки"],[/angry birds go/i,"Гонки"],[/sonic.*racing/i,"Гонки"],
-  [/jet car/i,"Гонки"],[/flashout/i,"Гонки"],[/trials frontier/i,"Гонки"],
-  [/sbk/i,"Гонки"],[/crazy taxi/i,"Гонки"],[/ridge racer/i,"Гонки"],
-  [/reckless racing/i,"Гонки"],[/payback/i,"Гонки"],[/zombie highway/i,"Гонки"],
-  [/offroad legends/i,"Гонки"],[/adrenaline rush/i,"Гонки"],[/blocky roads/i,"Гонки"],
-  [/re-volt/i,"Гонки"],[/carmageddon/i,"Гонки"],[/need for speed/i,"Гонки"],
-  [/the sims/i,"Симуляторы"],[/game dev story/i,"Симуляторы"],[/plague inc/i,"Симуляторы"],
-  [/surgeon simulator/i,"Симуляторы"],[/rollercoaster tycoon/i,"Симуляторы"],
-  [/godus/i,"Симуляторы"],[/mountain/i,"Симуляторы"],[/deer hunter/i,"Симуляторы"],
-  [/dino hunter/i,"Симуляторы"],[/infinite flight/i,"Симуляторы"],[/true skate/i,"Симуляторы"],
-  [/new star soccer/i,"Симуляторы"],[/top eleven/i,"Симуляторы"],[/simcity/i,"Симуляторы"],
-  [/city story/i,"Симуляторы"],[/fashion story/i,"Симуляторы"],
-  [/subway surf/i,"Аркады"],[/angry birds/i,"Аркады"],[/worms/i,"Аркады"],
-  [/smash hit/i,"Аркады"],[/ridiculous fishing/i,"Аркады"],[/hopeless/i,"Аркады"],
-  [/voxel rush/i,"Аркады"],[/unpossible/i,"Аркады"],[/cytus/i,"Аркады"],
-  [/sparkle/i,"Аркады"],[/sky gamblers/i,"Аркады"],[/fractal combat/i,"Аркады"],
-  [/star wars pinball/i,"Аркады"],[/tilt to live/i,"Аркады"],[/colossatron/i,"Аркады"],
-  [/rayman fiesta/i,"Аркады"],[/gunman clive/i,"Аркады"],[/garfield kart/i,"Аркады"],
-  [/pac-man/i,"Аркады"],[/ninjump/i,"Аркады"],
-  [/world of goo/i,"Головоломки"],[/bad piggies/i,"Головоломки"],
-  [/cut the rope/i,"Головоломки"],[/candy crush/i,"Головоломки"],
-  [/super hexagon/i,"Головоломки"],[/the room/i,"Головоломки"],
-  [/machinarium/i,"Головоломки"],[/little inferno/i,"Головоломки"],
-  [/year walk/i,"Головоломки"],[/duet game/i,"Головоломки"],[/blek/i,"Головоломки"],
-  [/the cave/i,"Головоломки"],[/icebreaker/i,"Головоломки"],[/incredipede/i,"Головоломки"],
-  [/rube works/i,"Головоломки"],[/atlantis adventure/i,"Головоломки"],
-  [/plants vs zombies/i,"Головоломки"],[/puzzle quest/i,"Головоломки"],
-  [/modern combat/i,"Экшн"],[/shadowgun/i,"Экшн"],[/n.o.v.a/i,"Экшн"],
-  [/mass effect/i,"Экшн"],[/amazing spider-man/i,"Экшн"],[/dark knight rises/i,"Экшн"],
-  [/max payne/i,"Экшн"],[/grand theft auto/i,"Экшн"],[/gta/i,"Экшн"],
-  [/gangstar/i,"Экшн"],[/dead trigger/i,"Экшн"],[/dead effect/i,"Экшн"],
-  [/deus ex/i,"Экшн"],[/batman/i,"Экшн"],[/injustice/i,"Экшн"],
-  [/teenage mutant/i,"Экшн"],[/walking dead/i,"Экшн"],[/roblox/i,"Экшн"],
-  [/terraria/i,"Экшн"],[/minecraft/i,"Экшн"],
-  [/xcom/i,"Стратегии"],[/great big war/i,"Стратегии"],[/great little war/i,"Стратегии"],
-  [/squids/i,"Стратегии"],[/frozen synapse/i,"Стратегии"],[/crimson.*steam/i,"Стратегии"],
-  [/guns.*glory/i,"Стратегии"],[/robo defense/i,"Стратегии"],[/battle for mars/i,"Стратегии"],
-  [/military madness/i,"Стратегии"],[/everlands/i,"Стратегии"],[/spaceteam/i,"Стратегии"],
-  [/arma tactics/i,"Стратегии"],
-  [/final fantasy/i,"RPG"],[/world ends with you/i,"RPG"],[/aralon/i,"RPG"],
-  [/dungeon hunter/i,"RPG"],[/tales of/i,"RPG"],[/adventure bar/i,"RPG"],
-  [/fifa/i,"Спорт"],[/pes/i,"Спорт"],[/nba/i,"Спорт"],[/nhl/i,"Спорт"],
-  [/madden/i,"Спорт"],[/tennis/i,"Спорт"],[/golf/i,"Спорт"],[/football/i,"Спорт"],
-  [/soccer/i,"Спорт"],[/basketball/i,"Спорт"],
+  [/asphalt/i,"Гонки"],[/real racing/i,"Гонки"],[/gt racing/i,"Гонки"],[/hill climb/i,"Гонки"],[/angry birds go/i,"Гонки"],[/sonic.*racing/i,"Гонки"],[/jet car/i,"Гонки"],[/flashout/i,"Гонки"],[/trials frontier/i,"Гонки"],[/sbk/i,"Гонки"],[/crazy taxi/i,"Гонки"],[/ridge racer/i,"Гонки"],[/reckless racing/i,"Гонки"],[/payback/i,"Гонки"],[/zombie highway/i,"Гонки"],[/offroad legends/i,"Гонки"],[/adrenaline rush/i,"Гонки"],[/blocky roads/i,"Гонки"],[/re-volt/i,"Гонки"],[/carmageddon/i,"Гонки"],[/need for speed/i,"Гонки"],
+  [/the sims/i,"Симуляторы"],[/game dev story/i,"Симуляторы"],[/plague inc/i,"Симуляторы"],[/surgeon simulator/i,"Симуляторы"],[/rollercoaster tycoon/i,"Симуляторы"],[/godus/i,"Симуляторы"],[/mountain/i,"Симуляторы"],[/deer hunter/i,"Симуляторы"],[/dino hunter/i,"Симуляторы"],[/infinite flight/i,"Симуляторы"],[/true skate/i,"Симуляторы"],[/new star soccer/i,"Симуляторы"],[/top eleven/i,"Симуляторы"],[/simcity/i,"Симуляторы"],[/city story/i,"Симуляторы"],[/fashion story/i,"Симуляторы"],
+  [/subway surf/i,"Аркады"],[/angry birds/i,"Аркады"],[/worms/i,"Аркады"],[/smash hit/i,"Аркады"],[/ridiculous fishing/i,"Аркады"],[/hopeless/i,"Аркады"],[/voxel rush/i,"Аркады"],[/unpossible/i,"Аркады"],[/cytus/i,"Аркады"],[/sparkle/i,"Аркады"],[/sky gamblers/i,"Аркады"],[/fractal combat/i,"Аркады"],[/star wars pinball/i,"Аркады"],[/tilt to live/i,"Аркады"],[/colossatron/i,"Аркады"],[/rayman fiesta/i,"Аркады"],[/gunman clive/i,"Аркады"],[/garfield kart/i,"Аркады"],[/pac-man/i,"Аркады"],[/ninjump/i,"Аркады"],
+  [/world of goo/i,"Головоломки"],[/bad piggies/i,"Головоломки"],[/cut the rope/i,"Головоломки"],[/candy crush/i,"Головоломки"],[/super hexagon/i,"Головоломки"],[/the room/i,"Головоломки"],[/machinarium/i,"Головоломки"],[/little inferno/i,"Головоломки"],[/year walk/i,"Головоломки"],[/duet game/i,"Головоломки"],[/blek/i,"Головоломки"],[/the cave/i,"Головоломки"],[/icebreaker/i,"Головоломки"],[/incredipede/i,"Головоломки"],[/rube works/i,"Головоломки"],[/atlantis adventure/i,"Головоломки"],[/plants vs zombies/i,"Головоломки"],[/puzzle quest/i,"Головоломки"],
+  [/modern combat/i,"Экшн"],[/shadowgun/i,"Экшн"],[/n.o.v.a/i,"Экшн"],[/mass effect/i,"Экшн"],[/amazing spider-man/i,"Экшн"],[/dark knight rises/i,"Экшн"],[/max payne/i,"Экшн"],[/grand theft auto/i,"Экшн"],[/gta/i,"Экшн"],[/gangstar/i,"Экшн"],[/dead trigger/i,"Экшн"],[/dead effect/i,"Экшн"],[/deus ex/i,"Экшн"],[/batman/i,"Экшн"],[/injustice/i,"Экшн"],[/teenage mutant/i,"Экшн"],[/walking dead/i,"Экшн"],[/roblox/i,"Экшн"],[/terraria/i,"Экшн"],[/minecraft/i,"Экшн"],
+  [/xcom/i,"Стратегии"],[/great big war/i,"Стратегии"],[/great little war/i,"Стратегии"],[/squids/i,"Стратегии"],[/frozen synapse/i,"Стратегии"],[/crimson.*steam/i,"Стратегии"],[/guns.*glory/i,"Стратегии"],[/robo defense/i,"Стратегии"],[/battle for mars/i,"Стратегии"],[/military madness/i,"Стратегии"],[/everlands/i,"Стратегии"],[/spaceteam/i,"Стратегии"],[/arma tactics/i,"Стратегии"],
+  [/final fantasy/i,"RPG"],[/world ends with you/i,"RPG"],[/aralon/i,"RPG"],[/dungeon hunter/i,"RPG"],[/tales of/i,"RPG"],[/adventure bar/i,"RPG"],
+  [/fifa/i,"Спорт"],[/pes/i,"Спорт"],[/nba/i,"Спорт"],[/nhl/i,"Спорт"],[/madden/i,"Спорт"],[/tennis/i,"Спорт"],[/golf/i,"Спорт"],[/football/i,"Спорт"],[/soccer/i,"Спорт"],[/basketball/i,"Спорт"],
   [/solitaire/i,"Карточные"],[/poker/i,"Карточные"],[/blackjack/i,"Карточные"],
-  [/chess/i,"Настольные"],[/checkers/i,"Настольные"],[/backgammon/i,"Настольные"],
-  [/monopoly/i,"Настольные"],[/scrabble/i,"Настольные"],
-  [/doodle jump/i,"Казуальные"],[/fruit ninja/i,"Казуальные"],[/flappy bird/i,"Казуальные"],
-  [/temple run/i,"Казуальные"],[/jetpack joyride/i,"Казуальные"],[/pou/i,"Казуальные"],
-  [/talking tom/i,"Казуальные"],[/говорящий том/i,"Казуальные"],[/говорящий бен/i,"Казуальные"],
-  [/myst/i,"Приключения"],[/riven/i,"Приключения"],[/broken sword/i,"Приключения"],
-  [/monkey island/i,"Приключения"],[/sam.*max/i,"Приключения"]
+  [/chess/i,"Настольные"],[/checkers/i,"Настольные"],[/backgammon/i,"Настольные"],[/monopoly/i,"Настольные"],[/scrabble/i,"Настольные"],
+  [/doodle jump/i,"Казуальные"],[/fruit ninja/i,"Казуальные"],[/flappy bird/i,"Казуальные"],[/temple run/i,"Казуальные"],[/jetpack joyride/i,"Казуальные"],[/pou/i,"Казуальные"],[/talking tom/i,"Казуальные"],[/говорящий том/i,"Казуальные"],[/говорящий бен/i,"Казуальные"],
+  [/myst/i,"Приключения"],[/riven/i,"Приключения"],[/broken sword/i,"Приключения"],[/monkey island/i,"Приключения"],[/sam.*max/i,"Приключения"]
 ];
+
 function detectGenre(name){
-  for (const [re, g] of GENRE_MAP) if (re.test(name)) return g;
+  for (const [re, genre] of GENRE_MAP) if (re.test(name)) return genre;
   return null;
+}
+
+// ---------- Кэш и Настройки ----------
+let cache = { games: { pages: {} }, apps: { pages: {} } };
+let prefs = { genreStats: {}, optIcons: false, optRecommend: true };
+
+function loadData() {
+  try {
+    const c = localStorage.getItem(CACHE_KEY);
+    if (c) cache = JSON.parse(c);
+    const p = localStorage.getItem(PREFS_KEY);
+    if (p) prefs = { ...prefs, ...JSON.parse(p) };
+  } catch (e) { console.log("Ошибка загрузки локальных данных"); }
+}
+function saveCache() { localStorage.setItem(CACHE_KEY, JSON.stringify(cache)); }
+function savePrefs() { localStorage.setItem(PREFS_KEY, JSON.stringify(prefs)); }
+
+// Применяем настройки
+const chkIcons = document.getElementById("optIcons");
+const chkRecommend = document.getElementById("optRecommend");
+if(chkIcons) {
+  chkIcons.checked = prefs.optIcons;
+  chkIcons.addEventListener("change", (e) => { prefs.optIcons = e.target.checked; savePrefs(); renderTable(); });
+}
+if(chkRecommend) {
+  chkRecommend.checked = prefs.optRecommend;
+  chkRecommend.addEventListener("change", (e) => { prefs.optRecommend = e.target.checked; savePrefs(); updateRecommended(); });
+}
+
+function trackGenreClick(genre) {
+  if (!genre || genre === "—") return;
+  prefs.genreStats[genre] = (prefs.genreStats[genre] || 0) + 1;
+  savePrefs();
 }
 
 // ---------- Состояние ----------
 const seen = new Set();
 const all = [];
-let total=0, okPages=0, failPages=0, filteredBeta=0;
+let total=0, okPages=0, failPages=0, newGames=0, cachedGames=0;
+let isCancelled = false;
 
 // ---------- UI ----------
 const $ = id => document.getElementById(id);
@@ -249,35 +313,50 @@ function getPreset(){
   return { key:k, ...PRESETS[k] };
 }
 
-// ---------- Загрузка с таймаутом ----------
-async function fetchPage(mode, page, timeoutMs = FETCH_TIMEOUT_MS){
-  const url = SITE + MODES[mode] + "&page=" + page;
+// ---------- Умная загрузка ----------
+async function fetchWithTimeout(url, ms){
   const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+  const t = setTimeout(() => ctrl.abort(), ms);
   try {
     const r = await fetch(url, { credentials:"omit", signal: ctrl.signal });
-    clearTimeout(timer);
+    clearTimeout(t);
     if (!r.ok) throw new Error("HTTP " + r.status);
-    // Возвращаем и текст, и финальный URL (после редиректа)
-    return { html: await r.text(), finalUrl: r.url || url, ok: true };
+    return { ok:true, text: await r.text(), url: r.url };
   } catch (e) {
-    clearTimeout(timer);
-    // Пробуем прокси (без таймаута на прокси, но с общим лимитом)
-    try {
-      const p = "https://api.allorigins.win/raw?url=" + encodeURIComponent(url);
-      const ctrl2 = new AbortController();
-      const t2 = setTimeout(() => ctrl2.abort(), timeoutMs);
-      const r2 = await fetch(p, { signal: ctrl2.signal });
-      clearTimeout(t2);
-      if (!r2.ok) throw new Error("proxy " + r2.status);
-      return { html: await r2.text(), finalUrl: url, ok: true };
-    } catch (e2) {
-      return { html: null, finalUrl: url, ok: false, error: e.message };
-    }
+    clearTimeout(t);
+    return { ok:false, error: e.message };
   }
 }
 
-// ---------- Определение числа страниц ----------
+async function fetchPageSmart(mode, page, pIndex, totalPages){
+  const url = SITE + MODES[mode] + "&page=" + page;
+  
+  let maxAttempts = 5;
+  let timeoutMs = 5000;
+
+  if (pIndex < 5) { maxAttempts = 10; timeoutMs = 7000; } 
+  else if (pIndex > totalPages * 0.8) { maxAttempts = 2; timeoutMs = 3000; } 
+  
+  if (failPages > 3) { maxAttempts = Math.max(2, maxAttempts - 3); }
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    if (isCancelled) return null;
+    const res = await fetchWithTimeout(url, timeoutMs);
+    if (res.ok) return res.text;
+    
+    try {
+      const proxy = "https://api.allorigins.win/raw?url=" + encodeURIComponent(url);
+      const res2 = await fetchWithTimeout(proxy, timeoutMs);
+      if (res2.ok) return res2.text;
+    } catch {}
+
+    log(`  ⚠ Попытка ${attempt}/${maxAttempts} не удалась...`);
+    await sleep(500);
+  }
+  return null;
+}
+
+// ---------- Определение страниц ----------
 function detectFromText(html){
   const m = html.match(/Страница\s+\d+\s+из\s+(\d+)/i);
   if (m) return parseInt(m[1], 10);
@@ -286,90 +365,67 @@ function detectFromText(html){
   return null;
 }
 
-// Извлекаем номер страницы из URL (после редиректа)
-function pageFromUrl(url){
-  try {
-    const u = new URL(url);
-    const p = u.searchParams.get("page");
-    if (p) {
-      const n = parseInt(p, 10);
-      if (!isNaN(n) && n > 0) return n;
-    }
-  } catch {}
-  // Иногда редирект может быть на другой формат — пробуем найти "page=N" в строке
-  const m = url.match(/[?&]page=(\d+)/i);
-  if (m) return parseInt(m[1], 10);
+async function determineLastPage(mode){
+  log("→ ищу «Страница X из Y»...");
+  const r1 = await fetchPageSmart(mode, 1, 1, 100);
+  if (!r1) { log("✗ первая страница не загрузилась"); return null; }
+  
+  const fromText = detectFromText(r1);
+  if (fromText){ log("✓ найдено в тексте: " + fromText); return fromText; }
+
+  log("→ текст не помог, пробую большой номер страницы...");
+  const r2 = await fetchPageSmart(mode, BIG_PAGE, 1, 100);
+  if (!r2) { log("✗ большой номер не сработал"); return null; }
+  
+  const fromText2 = detectFromText(r2);
+  if (fromText2){ log("✓ по тексту ответа: " + fromText2); return fromText2; }
+
+  log("✗ не удалось определить число страниц");
   return null;
 }
 
-// Основная функция: определяем последнюю страницу
-async function determineLastPage(mode){
-  log("→ определяю число страниц (способ 1: надпись «Страница X из Y»)...");
-  const first = await fetchPage(mode, 1, FETCH_TIMEOUT_MS);
-
-  // Если первая страница вообще не загрузилась — сразу пробуем probe
-  if (first.ok && first.html) {
-    const fromText = detectFromText(first.html);
-    if (fromText) {
-      log("✓ способ 1 сработал: " + fromText + " страниц");
-      return { lastPage: fromText, firstHtml: first.html, firstUrl: first.finalUrl };
-    }
-    log("⚠ надпись не найдена, пробую способ 2 (probe page=999999)...");
-  } else {
-    log("⚠ первая страница не загрузилась (" + (first.error || "таймаут") + "), пробую probe...");
-  }
-
-  // Способ 2: запрашиваем заведомо большую страницу
-  const probe = await fetchPage(mode, PROBE_PAGE, FETCH_TIMEOUT_MS);
-  if (!probe.ok || !probe.html) {
-    // Если и probe не удался — fallback по разделу
-    const fallback = mode === "games" ? 96 : 67;
-    log("✗ probe не удался, беру fallback: " + fallback);
-    return { lastPage: fallback, firstHtml: first.ok ? first.html : null, firstUrl: first.finalUrl };
-  }
-
-  // Пытаемся вытащить номер из финального URL
-  let fromUrl = pageFromUrl(probe.finalUrl);
-  if (fromUrl && fromUrl !== PROBE_PAGE) {
-    log("✓ способ 2 сработал (URL): последняя страница = " + fromUrl);
-    // Если первая страница не загрузилась, но probe дал HTML — используем его как «первую»
-    return { lastPage: fromUrl, firstHtml: first.ok ? first.html : null, firstUrl: first.finalUrl, probeHtml: probe.html };
-  }
-
-  // Если редиректа не было (URL остался с page=999999) — пробуем найти номер в тексте
-  const fromProbeText = detectFromText(probe.html);
-  if (fromProbeText) {
-    log("✓ способ 2 сработал (текст probe): " + fromProbeText);
-    return { lastPage: fromProbeText, firstHtml: first.ok ? first.html : null, firstUrl: first.finalUrl };
-  }
-
-  // Если страница с page=999999 вернула пустоту или ошибку — возможно, сайт не редиректит
-  // Тогда сканируем вручную вверх/вниз — но это дорого. Fallback:
-  const fallback = mode === "games" ? 96 : 67;
-  log("⚠ не удалось определить, беру fallback: " + fallback);
-  return { lastPage: fallback, firstHtml: first.ok ? first.html : null, firstUrl: first.finalUrl };
-}
-
-// ---------- Парсинг ----------
+// ---------- Парсинг (ИСПРАВЛЕН) ----------
 function parseItems(html, pageNum){
-  const doc = new DOMParser().parseFromString(html, "text/html");
-  const lines = (doc.body ? doc.body.innerText : "").split("\n").map(s=>s.trim()).filter(Boolean);
-  const items = [];
-  for (let i=0;i<lines.length;i++){
-    const m = lines[i].match(/^API\s+(\d+)\s*\(/);
-    if (!m) continue;
-    const api = parseInt(m[1],10);
-    let name=null, rating=null;
-    for (let j=i-1;j>=0 && j>=i-6;j--){
-      const l=lines[j];
-      const rm=l.match(/^Рейтинг:\s*([\d.]+)/);
-      if (rm){ rating=parseFloat(rm[1]); continue; }
-      if (/^Скачиваний:/.test(l)||/^API\s/.test(l)) continue;
-      name=l; break;
+  try {
+    const doc = new DOMParser().parseFromString(html, "text/html");
+    const lines = (doc.body ? doc.body.innerText : "").split("\n").map(s=>s.trim()).filter(Boolean);
+    const items = [];
+    for (let i=0;i<lines.length;i++){
+      const m = lines[i].match(/^API\s+(\d+)\s*\(/);
+      if (!m) continue;
+      const api = parseInt(m[1],10);
+      let name=null, rating=null;
+      for (let j=i-1;j>=0 && j>=i-6;j--){
+        const l=lines[j];
+        const rm=l.match(/^Рейтинг:\s*([\d.]+)/);
+        if (rm){ rating=parseFloat(rm[1]); continue; }
+        if (/^Скачиваний:/.test(l)||/^API\s/.test(l)) continue;
+        name=l; break;
+      }
+      if (name) items.push({ name, rating, api, foundOnPage: pageNum, iconUrl: null, gameUrl: null });
     }
-    if (name) items.push({ name, rating, api, foundOnPage: pageNum });
+    
+    // Попытка найти иконки и ссылки через DOM, если есть имена
+    if (items.length > 0) {
+      const allLinks = doc.querySelectorAll('a');
+      for (const item of items) {
+         // Ищем ссылку, текст которой содержит название игры (первые 10 символов)
+         const shortName = item.name.substring(0, 10).toLowerCase();
+         for (const a of allLinks) {
+            if (a.textContent.toLowerCase().includes(shortName)) {
+                item.gameUrl = a.href;
+                const img = a.querySelector('img');
+                if (img) item.iconUrl = img.src;
+                break;
+            }
+         }
+      }
+    }
+    return items;
+  } catch (e) {
+    console.error("Ошибка парсинга:", e);
+    return [];
   }
-  return items;
 }
 
 // ---------- ARMv6 ----------
@@ -386,91 +442,109 @@ function classifyArmv6(name, api){
   return "blue";
 }
 
-// ---------- Живой вывод ----------
-function appendRow(g, preset, selectedCat){
-  if (selectedCat !== "all" && g.genre !== selectedCat) return;
-  const tb = document.querySelector("#result tbody");
-  const tr = document.createElement("tr");
-  tr.className = g.arm === "green" ? "green" : g.arm === "yellow" ? "yellow" : g.arm === "red" ? "red" : "blue";
-  const r = g.rating!=null ? g.rating.toFixed(1) : "—";
-  const star = (g.rating||0)>=4 ? " ⭐" : "";
-  const arm = preset.armv6 ? armLabel(g.arm) : "—";
-  const pageUrl = SITE + MODES[$("mode").value] + "&page=" + g.foundOnPage;
-  tr.innerHTML = `<td class="${g.rating>=4?'good':''}">${g.name}${star}</td><td>${g.genre||"—"}</td><td>${r}</td><td>${g.api}</td><td>${arm}</td><td><a href="${pageUrl}" target="_blank">стр. ${g.foundOnPage}</a></td>`;
-  tb.appendChild(tr);
-  $("result").style.display = "table";
-}
+// ---------- Отрисовка ----------
 function armLabel(a){ return a==="green"?"🟢 пойдёт":a==="yellow"?"🟡 может":a==="red"?"🔴 нет":"🔵 ?"; }
 
-// ---------- Основной цикл ----------
-async function run(){
+function smartSort(a, b) {
+  const isDigitSym = (str) => /^[^a-zA-Zа-яА-Я]/.test(str);
+  const isEng = (str) => /^[a-zA-Z]/.test(str);
+  const aN = a.name.trim(), bN = b.name.trim();
+  
+  if (isDigitSym(aN) && !isDigitSym(bN)) return -1;
+  if (!isDigitSym(aN) && isDigitSym(bN)) return 1;
+  
+  if (isEng(aN) && !isEng(bN)) return -1;
+  if (!isEng(aN) && isEng(bN)) return 1;
+  
+  return aN.localeCompare(bN);
+}
+
+function renderTable(){
   const mode = $("mode").value;
   const category = $("category").value;
   const preset = getPreset();
+  const searchQ = $("searchInput").value.toLowerCase().trim();
+  const sortBy = $("sortSelect").value;
 
-  $("start").disabled = true;
-  logEl.textContent = ""; $("summary").innerHTML = "";
-  document.querySelector("#result tbody").innerHTML = "";
-  seen.clear(); all.length = 0;
-  total=0; okPages=0; failPages=0; filteredBeta=0;
-  drawChart();
+  const tb = document.querySelector("#result tbody");
+  tb.innerHTML = "";
 
-  // Определяем число страниц
-  const det = await determineLastPage(mode);
-  const lastPage = det.lastPage;
-
-  // Обрабатываем первую страницу, если она загрузилась
-  if (det.firstHtml) {
-    const firstItems = parseItems(det.firstHtml, 1);
-    okPages++;
-    for (const g of firstItems){
-      const key=g.name.toLowerCase().trim();
-      if (seen.has(key)) continue;
-      seen.add(key);
-      if (BETA_RE.test(g.name)){ filteredBeta++; continue; }
-      g.genre = detectGenre(g.name);
-      g.arm = classifyArmv6(g.name, g.api);
-      all.push(g); total++;
-      if (g.api <= preset.apiMax) appendRow(g, preset, category);
-    }
-    updateSummary(preset, category, mode);
-    drawChart();
-    await sleep(300);
-  } else {
-    log("⚠ первая страница не загрузилась, начинаю со 2-й");
+  let filtered = all.filter(g => g.api <= preset.apiMax && (category === "all" || g.genre === category));
+  
+  if (searchQ) {
+    filtered = filtered.filter(g => g.name.toLowerCase().includes(searchQ));
   }
 
-  // Остальные страницы
-  for (let p=2; p<=lastPage; p++){
-    log(`→ ${p}/${lastPage}...`);
-    const res = await fetchPage(mode, p);
-    if (!res.ok || !res.html){ failPages++; await sleep(500); continue; }
-    const items = parseItems(res.html, p);
-    if (!items.length){ failPages++; await sleep(500); continue; }
-    okPages++;
-    let added=0;
-    for (const g of items){
-      const key=g.name.toLowerCase().trim();
-      if (seen.has(key)) continue;
-      seen.add(key);
-      if (BETA_RE.test(g.name)){ filteredBeta++; continue; }
-      g.genre = detectGenre(g.name);
-      g.arm = classifyArmv6(g.name, g.api);
-      all.push(g); total++; added++;
-      if (g.api <= preset.apiMax) appendRow(g, preset, category);
-    }
-    log(`  ✓ +${added}`);
-    updateSummary(preset, category, mode);
-    drawChart();
-    await sleep(500);
+  if (sortBy === "rating") {
+    filtered.sort((a,b) => (b.rating||0) - (a.rating||0));
+  } else if (sortBy === "name") {
+    filtered.sort(smartSort);
   }
-  updateSummary(preset, category, mode);
-  drawChart();
-  $("start").disabled = false;
+
+  for (const g of filtered) {
+    const tr = document.createElement("tr");
+    tr.className = g.arm === "green" ? "green" : g.arm === "yellow" ? "yellow" : g.arm === "red" ? "red" : "blue";
+    const r = g.rating!=null ? g.rating.toFixed(1) : "—";
+    const star = (g.rating||0)>=4 ? " ⭐" : "";
+    const arm = preset.armv6 ? armLabel(g.arm) : "—";
+    
+    const link = g.gameUrl ? g.gameUrl : SITE + MODES[mode] + "&page=" + g.foundOnPage;
+    
+    let iconHtml = "";
+    if (prefs.optIcons && g.iconUrl) {
+      iconHtml = `<img src="${g.iconUrl}" style="width:20px; height:20px; vertical-align:middle; margin-right:6px; border-radius:4px;" onerror="this.style.display='none'">`;
+    }
+
+    tr.innerHTML = `
+      <td class="${g.rating>=4?'good':''}">${iconHtml}<a href="${link}" target="_blank" onclick="trackGenreClick('${g.genre}')">${g.name}</a>${star}</td>
+      <td class="col-hide-mobile">${g.genre || "—"}</td>
+      <td>${r}</td>
+      <td>${g.api}</td>
+      <td>${arm}</td>
+      <td><a href="${SITE + MODES[mode] + "&page=" + g.foundOnPage}" target="_blank">стр. ${g.foundOnPage}</a></td>
+    `;
+    tb.appendChild(tr);
+  }
 }
 
-// ---------- Сводка ----------
-function updateSummary(preset, category, mode){
+function updateRecommended(){
+  const wrap = $("recommendedWrap");
+  const tb = $("recBody");
+  
+  if (!prefs.optRecommend || Object.keys(prefs.genreStats).length === 0) {
+    wrap.classList.add("hidden");
+    return;
+  }
+
+  let topGenre = null;
+  let maxCount = 0;
+  for (const [g, count] of Object.entries(prefs.genreStats)) {
+    if (count > maxCount) { maxCount = count; topGenre = g; }
+  }
+
+  const preset = getPreset();
+  const recs = all.filter(g => g.genre === topGenre && g.api <= preset.apiMax).slice(0, 5); 
+
+  if (recs.length === 0) { wrap.classList.add("hidden"); return; }
+  
+  wrap.classList.remove("hidden");
+  tb.innerHTML = "";
+  for (const g of recs) {
+    const tr = document.createElement("tr");
+    const link = g.gameUrl ? g.gameUrl : SITE + MODES[$("mode").value] + "&page=" + g.foundOnPage;
+    tr.innerHTML = `
+      <td><a href="${link}" target="_blank" onclick="trackGenreClick('${g.genre}')">${g.name}</a></td>
+      <td class="col-hide-mobile">${g.genre}</td>
+      <td>${g.rating ? g.rating.toFixed(1) : "—"}</td>
+      <td>${g.api}</td>
+      <td>${getPreset().armv6 ? armLabel(g.arm) : "—"}</td>
+      <td><a href="${SITE + MODES[$("mode").value] + "&page=" + g.foundOnPage}" target="_blank">стр. ${g.foundOnPage}</a></td>
+    `;
+    tb.appendChild(tr);
+  }
+}
+
+function updateSummary(preset, category, mode, newG = 0, cachedG = 0){
   let matching = all.filter(g => g.api <= preset.apiMax);
   if (category !== "all") matching = matching.filter(g => g.genre === category);
   const good = matching.filter(g => (g.rating||0)>=4);
@@ -481,25 +555,16 @@ function updateSummary(preset, category, mode){
   html += `<b>Категория:</b> ${category} | `;
   html += `<b>Телефон:</b> ${preset.name} (API ≤ ${preset.apiMax})<br>`;
   html += `Страниц: ${okPages} ок, ${failPages} ошибок<br>`;
-  html += `Уникальных всего: <b>${total}</b><br>`;
+  html += `Уникальных всего: <b>${total}</b> (из кэша: ${cachedG}, новых: ${newG})<br>`;
   html += `Подходят (API + категория): <b>${matching.length}</b><br>`;
   html += `«Хорошие» (≥4★): <b>${good.length}</b><br>`;
   if (preset.armv6){
     html += `🟢 ARMv6 точно: <b>${green.length}</b><br>`;
     html += `🟡 ARMv6 может: <b>${yellow.length}</b><br>`;
   }
-  if (good.length){
-    html += `<br><b>Хорошие:</b><br>`;
-    html += good.slice(0,60).map(g=>{
-      const icon = preset.armv6 ? (g.arm==="green"?"🟢":g.arm==="yellow"?"🟡":g.arm==="red"?"🔴":"🔵") : "•";
-      return `${icon} ${g.name} — ${g.rating.toFixed(1)}★ (${g.genre||"?"}, API ${g.api}, стр. ${g.foundOnPage})`;
-    }).join("<br>");
-    if (good.length>60) html += `<br>… и ещё ${good.length-60}`;
-  }
   $("summary").innerHTML = html;
 }
 
-// ---------- График ----------
 const GROUPS = [
   {label:"Android 1.6 и ниже", color:"#888",    test:a=>a<=4},
   {label:"Android 2.1+",       color:"#e67e22", test:a=>a===7},
@@ -527,10 +592,107 @@ function drawChart(){
   ctx.fillStyle="#000"; ctx.font="bold 14px sans-serif"; ctx.textAlign="left"; ctx.fillText("Количество по версиям Android",pL,pT-4);
 }
 
-// ---------- Старт ----------
+async function run(){
+  const mode = $("mode").value;
+  const category = $("category").value;
+  const preset = getPreset();
+
+  $("start").disabled = true;
+  $("cancel").classList.remove("hidden");
+  $("progressWrap").style.display = "block";
+  $("progressBar").style.width = "0%";
+  $("progressBar").style.background = "var(--btn)";
+  $("progressText").textContent = "Определение страниц...";
+  $("resultWrap").style.display = "none";
+  
+  logEl.textContent = ""; $("summary").innerHTML = "";
+  seen.clear(); all.length = 0;
+  total=0; okPages=0; failPages=0; newGames=0; cachedGames=0;
+  isCancelled = false;
+
+  const lastPage = await determineLastPage(mode);
+  if (!lastPage || isCancelled){
+    if (!isCancelled) log("✗ не удалось определить число страниц");
+    $("start").disabled = false;
+    $("cancel").classList.add("hidden");
+    $("progressText").textContent = isCancelled ? "Отменено" : "Ошибка";
+    return;
+  }
+  
+  log("Всего страниц: " + lastPage);
+  if (!cache[mode].pages) cache[mode].pages = {};
+
+  for (let p=1; p<=lastPage; p++){
+    if (isCancelled) break;
+
+    const pageKey = "p" + p;
+    let items = [];
+    let isCached = false;
+
+    if (cache[mode].pages[pageKey]) {
+      items = cache[mode].pages[pageKey];
+      isCached = true;
+      log(`→ ${p}/${lastPage}... (кэш)`);
+    } else {
+      log(`→ ${p}/${lastPage}... (загрузка)`);
+      const html = await fetchPageSmart(mode, p, p, lastPage);
+      if (!html){ failPages++; await sleep(200); continue; }
+      
+      items = parseItems(html, p);
+      if (!items.length){ failPages++; await sleep(200); continue; }
+      cache[mode].pages[pageKey] = items;
+    }
+    
+    okPages++;
+    for (const g of items){
+      const key=g.name.toLowerCase().trim();
+      if (seen.has(key)) continue;
+      seen.add(key);
+      if (BETA_RE.test(g.name)) continue;
+      
+      g.genre = detectGenre(g.name);
+      g.arm = classifyArmv6(g.name, g.api);
+      all.push(g); total++;
+      
+      if (isCached) cachedGames++; else newGames++;
+    }
+    
+    const percent = Math.round((p / lastPage) * 100);
+    $("progressBar").style.width = percent + "%";
+    $("progressText").textContent = `Сканирование... ${p} / ${lastPage} (${percent}%)`;
+    updateSummary(preset, category, mode, newGames, cachedGames);
+    
+    if (!isCached) await sleep(200);
+  }
+  
+  saveCache();
+  
+  $("resultWrap").style.display = "block";
+  renderTable();
+  updateRecommended();
+  drawChart();
+  updateSummary(preset, category, mode, newGames, cachedGames);
+  
+  $("start").disabled = false;
+  $("cancel").classList.add("hidden");
+  $("progressBar").style.width = isCancelled ? `${Math.round((okPages/lastPage)*100)}%` : "100%";
+  if (!isCancelled) $("progressBar").style.background = "#27ae60";
+  $("progressText").textContent = isCancelled ? "Сканирование отменено" : `Готово! Страниц: ${lastPage}`;
+}
+
 $("start").addEventListener("click", run);
+$("cancel").addEventListener("click", () => {
+  isCancelled = true;
+  log("🛑 Отмена...");
+});
+$("searchInput").addEventListener("input", renderTable);
+$("sortSelect").addEventListener("change", renderTable);
+$("mode").addEventListener("change", renderTable);
+$("category").addEventListener("change", renderTable);
+$("preset").addEventListener("change", renderTable);
+
+loadData();
 updatePresetInfo();
-drawChart();
 </script>
 </body>
 </html>

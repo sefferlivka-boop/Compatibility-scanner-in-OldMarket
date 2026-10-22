@@ -3,290 +3,224 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>OldMarket — игры и приложения</title>
+<title>OMV (OldMarket Viewer) v1.2</title>
 <style>
   :root {
-    --bg: #ffffff; --fg: #222222; --border: #cccccc; --panel: #f9f9f9;
-    --green: #d4edda; --yellow: #fff3cd; --red: #f8d7da; --blue: #d1ecf1; --good: #fff3cd;
-    --btn: #0066cc; --btn-text: #ffffff; --btn-danger: #dc3545;
+    --bg: #f0f0f0; --fg: #222; --border: #ccc; 
+    --header-bg: #99cc00; --header-fg: #fff;
+    --header-sub: #7cb300;
+    --list-bg: #fff; --list-alt: #f9f9f9;
+    --green: #d4edda; --yellow: #fff3cd; --red: #f8d7da; --blue: #d1ecf1;
   }
-  body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 12px; background: var(--bg); color: var(--fg); font-size: 15px; line-height: 1.4; }
-  h1 { font-size: 1.3em; margin: 0 0 10px; }
-  h2 { font-size: 1.1em; margin: 15px 0 8px; }
-  #log { background: var(--panel); padding: 8px; border-radius: 6px; font-family: monospace; font-size: 11px; max-height: 100px; overflow-y: auto; white-space: pre-wrap; border: 1px solid var(--border); }
-  table { border-collapse: collapse; margin-top: 10px; width: 100%; font-size: 13px; }
-  th, td { border: 1px solid var(--border); padding: 6px 8px; text-align: left; vertical-align: top; }
-  th { background: #eee; position: sticky; top: 0; }
-  .green { background: var(--green); } .yellow { background: var(--yellow); } .red { background: var(--red); } .blue { background: var(--blue); }
-  .good { font-weight: bold; background: var(--good); }
-  a { color: var(--btn); text-decoration: none; }
-  #summary { margin-top: 10px; padding: 10px; background: #eef; border-radius: 6px; font-size: 14px; }
-  #chartWrap { margin-top: 20px; display: none; }
-  canvas { border: 1px solid var(--border); background: #fff; width: 100%; height: auto; }
-  .legend { font-size: 12px; margin-bottom: 8px; display: flex; flex-wrap: wrap; gap: 5px; }
-  .legend span { padding: 2px 6px; border-radius: 4px; }
-  .panel { margin: 10px 0; padding: 10px; background: var(--panel); border-radius: 6px; border: 1px solid var(--border); }
-  .panel label { display: block; margin-bottom: 8px; font-weight: bold; }
-  .panel select, .panel input[type="text"], .panel input[type="number"] { width: 100%; padding: 8px; border-radius: 4px; border: 1px solid var(--border); font-size: 15px; box-sizing: border-box; margin-top: 4px; }
-  .hidden { display: none !important; }
+  body { font-family: sans-serif; margin: 0; padding: 0; background: var(--bg); color: var(--fg); font-size: 14px; line-height: 1.4; padding-bottom: 20px; }
   
-  .btn-row { display: flex; gap: 10px; margin-top: 10px; }
-  button { flex: 1; padding: 14px; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; color: #fff; }
-  button#start { background: var(--btn); }
-  button#cancel { background: var(--btn-danger); }
-  button:disabled { opacity: 0.6; cursor: default; }
+  .top-bar { background: var(--header-bg); color: var(--header-fg); padding: 10px 15px; display: flex; align-items: center; border-bottom: 2px solid var(--header-sub); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+  .top-bar svg { width: 28px; height: 28px; margin-right: 10px; fill: var(--header-fg); }
+  .top-bar h1 { font-size: 1.2em; margin: 0; font-weight: bold; }
+  .top-bar .version { font-size: 12px; margin-left: 10px; opacity: 0.8; }
 
-  #progressWrap { margin-top: 12px; display: none; }
-  #progressBarContainer { background: #eee; border-radius: 6px; height: 16px; border: 1px solid var(--border); overflow: hidden; }
-  #progressBar { background: var(--btn); height: 100%; width: 0%; transition: width 0.2s; }
-  #progressText { font-size: 13px; color: #555; text-align: center; margin-top: 6px; font-weight: bold; }
+  .panel { margin: 10px; padding: 10px; background: #fff; border-radius: 4px; border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+  .panel label { display: block; margin-bottom: 8px; font-weight: bold; color: #555; }
+  .panel select, .panel input[type="text"], .panel input[type="number"] { width: 100%; padding: 8px; border-radius: 4px; border: 1px solid var(--border); font-size: 14px; box-sizing: border-box; margin-top: 4px; }
+  .hidden { display: none !important; }
 
-  #resultWrap { display: none; margin-top: 15px; }
-  .icon-cell img { width: 24px; height: 24px; vertical-align: middle; margin-right: 5px; border-radius: 4px; }
+  .btn-row { display: flex; gap: 10px; margin: 10px; }
+  button { flex: 1; padding: 12px; border: 1px solid #999; border-radius: 4px; font-size: 15px; font-weight: bold; cursor: pointer; background: linear-gradient(to bottom, #f9f9f9, #e0e0e0); color: #222; transition: background 0.2s; }
+  button:active { background: #ccc; }
+  button#start { background: linear-gradient(to bottom, #99cc00, #7cb300); color: #fff; border-color: #6b9a00; }
+  button#cancel { background: linear-gradient(to bottom, #ff4b4b, #cc0000); color: #fff; border-color: #990000; }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
 
-  .settings-panel { margin-top: 30px; padding: 15px; background: #f4f4f4; border-radius: 6px; font-size: 13px; border-top: 2px solid var(--border); }
-  .settings-panel label { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-weight: normal; cursor: pointer; }
-  .settings-panel input[type="checkbox"] { width: 18px; height: 18px; }
+  #progressWrap { margin: 10px; display: none; }
+  #progressBarContainer { background: #ccc; border-radius: 4px; height: 12px; border: 1px solid #999; overflow: hidden; }
+  #progressBar { background: var(--header-bg); height: 100%; width: 0%; transition: width 0.2s; }
+  #progressText { font-size: 12px; color: #555; text-align: center; margin-top: 4px; font-weight: bold; }
+
+  #log { margin: 10px; background: #000; color: #0f0; padding: 8px; border-radius: 4px; font-family: monospace; font-size: 11px; max-height: 100px; overflow-y: auto; white-space: pre-wrap; }
+
+  .table-wrap { margin: 10px; background: #fff; border: 1px solid var(--border); border-radius: 4px; overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: 13px; }
+  th, td { border-bottom: 1px solid var(--border); padding: 8px; text-align: left; vertical-align: middle; }
+  th { background: #eee; position: sticky; top: 0; font-weight: bold; color: #444; }
+  tr:nth-child(even) { background: var(--list-alt); }
+  .green { background: var(--green); } .yellow { background: var(--yellow); } .red { background: var(--red); } .blue { background: var(--blue); }
+  .good { font-weight: bold; }
+
+  /* Обычный счетчик (без барабана) */
+  .digit-container { display: inline-block; vertical-align: bottom; }
+
+  #summary { margin: 10px; padding: 10px; background: #fff; border: 1px solid var(--border); border-radius: 4px; font-size: 14px; line-height: 1.6; }
+  .fade-in { animation: fadeIn 0.4s ease-in-out; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+  .recommended-wrap { margin: 10px; padding: 10px; background: #e0f2fe; border: 1px solid #bae6fd; border-radius: 4px; }
+
+  .settings-panel { margin: 20px 10px 10px 10px; padding: 10px; background: #e0e0e0; border-radius: 4px; font-size: 13px; border-top: 2px solid #ccc; }
+  .settings-panel label { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; cursor: pointer; color: #333; }
+  .settings-panel input[type="checkbox"] { width: 16px; height: 16px; }
+  .copyright { text-align: center; font-size: 11px; color: #666; margin-top: 10px; }
 
   @media (max-width: 600px) {
     .col-hide-mobile { display: none; }
-    th, td { padding: 4px 5px; font-size: 12px; }
+    th, td { padding: 6px; font-size: 12px; }
   }
 </style>
 </head>
 <body>
-<h1>OldMarket — игры и приложения</h1>
-
-<div class="panel">
-  <label>Раздел:
-    <select id="mode">
-      <option value="games">Игры</option>
-      <option value="apps">Приложения</option>
-    </select>
-  </label>
-  <label>Категория:
-    <select id="category">
-      <option value="all">Все</option>
-      <optgroup label="Игры">
-        <option>Гонки</option><option>Симуляторы</option><option>Аркады</option>
-        <option>Головоломки</option><option>Экшн</option><option>Стратегии</option>
-        <option>Спорт</option><option>Казуальные</option><option>Карточные</option>
-        <option>Настольные</option><option>Приключения</option><option>RPG</option>
-      </optgroup>
-      <optgroup label="Приложения">
-        <option>Инструменты</option><option>Связь</option><option>Мультимедиа</option>
-        <option>Фото и видео</option><option>Музыка и аудио</option><option>Финансы</option>
-        <option>Здоровье</option><option>Путешествия</option><option>Образование</option>
-        <option>Бизнес</option><option>Погода</option><option>Новости</option>
-        <option>Социальные</option><option>Персонализация</option>
-      </optgroup>
-    </select>
-  </label>
-  <label>Телефон:
-    <select id="preset">
-      <option value="x8">Sony Ericsson Xperia X8 / W8 (ARMv6, ≤2.2)</option>
-      <option value="x10">Sony Ericsson Xperia X10 (ARMv7, ≤2.3.3)</option>
-      <option value="x10mini">Sony Ericsson X10 mini / mini pro (ARMv6, ≤2.1)</option>
-      <option value="galaxys">Samsung Galaxy S (ARMv7, ≤2.3)</option>
-      <option value="galaxys2">Samsung Galaxy S II (ARMv7, ≤4.1)</option>
-      <option value="galaxys3">Samsung Galaxy S III (ARMv7, ≤4.4)</option>
-      <option value="xperiaj">Sony Xperia J (ARMv7, ≤4.1)</option>
-      <option value="xperiae">Sony Xperia E (ARMv7, ≤4.1)</option>
-      <option value="htcdesirehd">HTC Desire HD (ARMv7, ≤2.3)</option>
-      <option value="custom">Другой телефон (ввести вручную)</option>
-      <option value="any">Любой (без фильтра)</option>
-    </select>
-  </label>
-  <span id="presetInfo" style="font-size:12px; color:#555; display:block; margin-bottom:8px;"></span>
-</div>
-
-<div class="panel hidden" id="customPanel">
-  <label>Архитектура:
-    <select id="cArm"><option value="v6">ARMv6</option><option value="v7" selected>ARMv7</option></select>
-  </label>
-  <label>Процессор:
-    <select id="cCpu">
-      <option value="">— выбрать —</option>
-      <option>Qualcomm MSM7227 600 MHz (ARMv6)</option>
-      <option>Qualcomm MSM7227 800 MHz (ARMv6)</option>
-      <option>Qualcomm QSD8250 1 GHz (ARMv7)</option>
-      <option>Qualcomm MSM8255 1 GHz (ARMv7)</option>
-      <option>Samsung Hummingbird 1 GHz (ARMv7)</option>
-      <option>Samsung Exynos 4210 1.2 GHz (ARMv7)</option>
-      <option>Samsung Exynos 4412 1.4 GHz (ARMv7)</option>
-      <option>TI OMAP 3430 600 MHz (ARMv7)</option>
-      <option>TI OMAP 4430 1 GHz (ARMv7)</option>
-      <option>NVIDIA Tegra 2 1 GHz (ARMv7)</option>
-      <option>NVIDIA Tegra 3 1.2 GHz (ARMv7)</option>
-      <option>Broadcom BCM21553 832 MHz (ARMv6)</option>
-    </select>
-  </label>
-  <label>Частота, МГц:
-    <input id="cFreq" type="number" min="200" max="2500" step="50" value="1000">
-  </label>
-  <label>Android (API):
-    <select id="cApi">
-      <option value="4">1.6 (API 4)</option>
-      <option value="7">2.1 (API 7)</option>
-      <option value="8">2.2 (API 8)</option>
-      <option value="10">2.3.3 (API 10)</option>
-      <option value="14">4.0 (API 14)</option>
-      <option value="16">4.1 (API 16)</option>
-      <option value="19">4.4 (API 19)</option>
-    </select>
-  </label>
-  <label>Производитель:
-    <input id="cVendor" type="text" placeholder="Sony / Samsung / HTC…">
-  </label>
-</div>
-
-<div class="btn-row">
-  <button id="start">Начать сбор</button>
-  <button id="cancel" class="hidden">Отмена</button>
-</div>
-
-<div id="progressWrap">
-  <div id="progressBarContainer">
-    <div id="progressBar"></div>
-  </div>
-  <div id="progressText">0 / 0</div>
-</div>
-
-<div id="log"></div>
-<div id="summary"></div>
-
-<div id="resultWrap">
   
-  <div id="recommendedWrap" class="hidden" style="margin-top: 15px; padding: 10px; background: #e0f2fe; border: 1px solid #bae6fd; border-radius: 6px;">
-    <h2 style="margin-top: 0; color: #0369a1;">✨ Специально для вас</h2>
-    <p style="font-size: 12px; color: #555; margin-bottom: 8px;">На основе ваших самых частых открытий в жанрах.</p>
-    <table style="margin-top: 0;">
-      <thead><tr><th>Название</th><th class="col-hide-mobile">Жанр</th><th>Рейтинг</th><th>API</th><th>ARMv6</th><th>Стр.</th></tr></thead>
-      <tbody id="recBody"></tbody>
-    </table>
-  </div>
+<div class="top-bar">
+  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+    <path d="M18 6h-2c0-2.21-1.79-4-4-4S8 3.79 8 6H6c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-6-2c1.1 0 2 .9 2 2h-4c0-1.1.9-2 2-2zm6 16H6V8h2v2c0 .55.45 1 1 1s1-.45 1-1V8h4v2c0 .55.45 1 1 1s1-.45 1-1V8h2v12z"/>
+  </svg>
+  <h1>OMV (OldMarket Viewer) <span class="version">v1.2</span></h1>
+</div>
 
-  <div id="chartWrap">
-    <h2>График: игры по версиям Android</h2>
-    <div class="legend">
-      <span style="background:#888; color:#fff;">1.6−</span>
-      <span style="background:#e67e22;">2.1+</span>
-      <span style="background:#27ae60; color:#fff;">2.2+</span>
-      <span style="background:#2980b9; color:#fff;">2.3+</span>
-      <span style="background:#8e44ad; color:#fff;">4.0+</span>
-    </div>
-    <canvas id="chart" width="1000" height="400"></canvas>
-  </div>
-
-  <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 20px; flex-wrap: wrap; gap: 10px;">
-    <h2>Найденное</h2>
-    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-      <input type="text" id="searchInput" placeholder="Поиск по названию..." style="padding: 6px; border-radius: 4px; border: 1px solid #ccc; width: 200px;">
-      <select id="sortSelect" style="padding: 6px; border-radius: 4px; border: 1px solid #ccc;">
-        <option value="none">Без сортировки</option>
-        <option value="name">По имени (A-Z, А-Я)</option>
-        <option value="rating">По рейтингу (высокий)</option>
+<div id="mainView">
+  <div class="panel">
+    <label>Раздел:
+      <select id="mode">
+        <option value="games">Игры</option>
+        <option value="apps">Приложения</option>
       </select>
-    </div>
+    </label>
+    <label>Категория:
+      <select id="category">
+        <option value="all">Все</option>
+        <optgroup label="Игры">
+          <option>Гонки</option><option>Симуляторы</option><option>Аркады</option>
+          <option>Головоломки</option><option>Экшн</option><option>Стратегии</option>
+          <option>Спорт</option><option>Казуальные</option><option>Карточные</option>
+          <option>Настольные</option><option>Приключения</option><option>RPG</option>
+        </optgroup>
+        <optgroup label="Приложения">
+          <option>Инструменты</option><option>Связь</option><option>Мультимедиа</option>
+          <option>Фото и видео</option><option>Музыка и аудио</option><option>Финансы</option>
+          <option>Здоровье</option><option>Путешествия</option><option>Образование</option>
+          <option>Бизнес</option><option>Погода</option><option>Новости</option>
+          <option>Социальные</option><option>Персонализация</option>
+        </optgroup>
+      </select>
+    </label>
+    <label>Телефон:
+      <select id="preset">
+        <option value="x8">Sony Ericsson Xperia X8 / W8 (ARMv6, ≤2.2)</option>
+        <option value="x10">Sony Ericsson Xperia X10 (ARMv7, ≤2.3.3)</option>
+        <option value="galaxys">Samsung Galaxy S (ARMv7, ≤2.3)</option>
+        <option value="galaxys2">Samsung Galaxy S II (ARMv7, ≤4.1)</option>
+        <option value="galaxys3">Samsung Galaxy S III (ARMv7, ≤4.4)</option>
+        <option value="xperiaj">Sony Xperia J (ARMv7, ≤4.1)</option>
+        <option value="xperiae">Sony Xperia E (ARMv7, ≤4.1)</option>
+        <option value="htcdesirehd">HTC Desire HD (ARMv7, ≤2.3)</option>
+        <option value="custom">Другой телефон (ввести вручную)</option>
+        <option value="any">Любой (без фильтра)</option>
+      </select>
+    </label>
   </div>
 
-  <table id="result">
-    <thead><tr><th>Название</th><th class="col-hide-mobile">Жанр</th><th>Рейтинг</th><th>API</th><th>ARMv6</th><th>Стр.</th></tr></thead>
-    <tbody></tbody>
-  </table>
+  <div class="panel hidden" id="customPanel">
+    <label>Архитектура: <select id="cArm"><option value="v6">ARMv6</option><option value="v7" selected>ARMv7</option></select></label>
+    <label>Android (API): <select id="cApi"><option value="4">1.6 (API 4)</option><option value="7">2.1 (API 7)</option><option value="8">2.2 (API 8)</option><option value="10">2.3.3 (API 10)</option><option value="14">4.0 (API 14)</option><option value="19">4.4 (API 19)</option></select></label>
+    <label style="font-weight: normal; display: flex; align-items: center; gap: 8px; margin-top: 10px;">
+      <input type="checkbox" id="optTegra"> Включить игры для NVIDIA Tegra (THD)
+    </label>
+  </div>
+
+  <div class="btn-row">
+    <button id="start">Начать сбор</button>
+    <button id="cancel" class="hidden">Отмена</button>
+  </div>
+
+  <div id="progressWrap">
+    <div id="progressBarContainer"><div id="progressBar"></div></div>
+    <div id="progressText">0 / 0</div>
+  </div>
+
+  <div id="log"></div>
+  
+  <div id="summary" class="fade-in" style="display:none;"></div>
+
+  <div id="resultWrap" class="hidden fade-in">
+    
+    <div id="recommendedWrap" class="recommended-wrap hidden fade-in">
+      <h2 style="margin-top: 0; font-size: 1.1em; color: #0369a1;">✨ Специально для вас</h2>
+      <div class="table-wrap" style="margin: 0; border: none;">
+        <table><thead><tr><th>Название</th><th>Жанр</th><th>Рейтинг</th><th>API</th><th>Стр.</th></tr></thead><tbody id="recBody"></tbody></table>
+      </div>
+    </div>
+
+    <div style="margin: 10px; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 10px;">
+      <h2 style="font-size: 1.1em; margin: 0;">Найденное</h2>
+      <div style="display: flex; gap: 5px; flex-wrap: wrap;">
+        <input type="text" id="searchInput" placeholder="Поиск..." style="padding: 6px; border-radius: 4px; border: 1px solid #ccc; width: 150px;">
+        <select id="sortSelect" style="padding: 6px; border-radius: 4px; border: 1px solid #ccc;">
+          <option value="none">Без сортировки</option>
+          <option value="name">По имени</option>
+          <option value="rating">По рейтингу</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table id="result">
+        <thead>
+          <tr>
+            <th>Название</th>
+            <th class="col-hide-mobile">Жанр</th>
+            <th>Рейтинг</th>
+            <th>API</th>
+            <th id="thArmv6">ARMv6</th>
+            <th>Стр.</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
 </div>
 
 <div class="settings-panel">
-  <label><input type="checkbox" id="optIcons"> Показывать иконки игр (медленнее)</label>
-  <label><input type="checkbox" id="optRecommend" checked> Показывать блок «Специально для вас»</label>
-  <div style="margin-top: 15px; text-align: center; color: #666; font-size: 11px;">
-    Seffer's idea, made with DEEPSEEK
+  <button id="clearCache" style="background: #ffcccc; color: #cc0000; border-color: #cc0000; margin-bottom: 15px;">Очистить весь кэш</button>
+  <div class="copyright">
+    Seffer's idea, made with DEEPSEEK<br>OMV v1.2
   </div>
 </div>
 
 <script>
-// ---------- База URL ----------
+const VERSION = "1.2";
 const SITE = "https://ilyamarket.site/index.php?mode=";
 const MODES = { games: "games", apps: "apps" };
 const BIG_PAGE = 999999;
-const CACHE_KEY = "oldmarket_cache_v2";
-const PREFS_KEY = "oldmarket_prefs";
+// Версионные ключи кэша
+const CACHE_KEY = `oldmarket_cache_${VERSION}`;
+const PREFS_KEY = `oldmarket_prefs_${VERSION}`;
 
-// ---------- Пресеты ----------
 const PRESETS = {
-  x8:        { name:"Xperia X8/W8",        apiMax:8,  armv6:true,  note:"ARMv6, MSM7227 600MHz" },
-  x10:       { name:"Xperia X10",          apiMax:10, armv6:false, note:"ARMv7, QSD8250 1GHz" },
-  x10mini:   { name:"X10 mini / mini pro", apiMax:7,  armv6:true,  note:"ARMv6, MSM7227" },
-  galaxys:   { name:"Galaxy S",            apiMax:10, armv6:false, note:"ARMv7, Hummingbird" },
-  galaxys2:  { name:"Galaxy S II",         apiMax:16, armv6:false, note:"ARMv7, Exynos" },
-  galaxys3:  { name:"Galaxy S III",        apiMax:19, armv6:false, note:"ARMv7, Exynos" },
-  xperiaj:   { name:"Xperia J",            apiMax:16, armv6:false, note:"ARMv7" },
-  xperiae:   { name:"Xperia E",            apiMax:16, armv6:false, note:"ARMv7" },
-  htcdesirehd:{name:"HTC Desire HD",       apiMax:10, armv6:false, note:"ARMv7" },
-  any:       { name:"Любой",               apiMax:22, armv6:false, note:"Без фильтра" }
+  x8: { name:"Xperia X8/W8", apiMax:8, armv6:true }, x10: { name:"Xperia X10", apiMax:10, armv6:false },
+  galaxys: { name:"Galaxy S", apiMax:10, armv6:false }, galaxys2: { name:"Galaxy S II", apiMax:16, armv6:false },
+  galaxys3: { name:"Galaxy S III", apiMax:19, armv6:false }, xperiaj: { name:"Xperia J", apiMax:16, armv6:false },
+  xperiae: { name:"Xperia E", apiMax:16, armv6:false }, htcdesirehd: { name:"HTC Desire HD", apiMax:10, armv6:false },
+  any: { name:"Любой", apiMax:22, armv6:false }
 };
 
-// ---------- Жанры ----------
 const GENRE_MAP = [
-  [/asphalt/i,"Гонки"],[/real racing/i,"Гонки"],[/gt racing/i,"Гонки"],[/hill climb/i,"Гонки"],[/angry birds go/i,"Гонки"],[/sonic.*racing/i,"Гонки"],[/jet car/i,"Гонки"],[/flashout/i,"Гонки"],[/trials frontier/i,"Гонки"],[/sbk/i,"Гонки"],[/crazy taxi/i,"Гонки"],[/ridge racer/i,"Гонки"],[/reckless racing/i,"Гонки"],[/payback/i,"Гонки"],[/zombie highway/i,"Гонки"],[/offroad legends/i,"Гонки"],[/adrenaline rush/i,"Гонки"],[/blocky roads/i,"Гонки"],[/re-volt/i,"Гонки"],[/carmageddon/i,"Гонки"],[/need for speed/i,"Гонки"],
-  [/the sims/i,"Симуляторы"],[/game dev story/i,"Симуляторы"],[/plague inc/i,"Симуляторы"],[/surgeon simulator/i,"Симуляторы"],[/rollercoaster tycoon/i,"Симуляторы"],[/godus/i,"Симуляторы"],[/mountain/i,"Симуляторы"],[/deer hunter/i,"Симуляторы"],[/dino hunter/i,"Симуляторы"],[/infinite flight/i,"Симуляторы"],[/true skate/i,"Симуляторы"],[/new star soccer/i,"Симуляторы"],[/top eleven/i,"Симуляторы"],[/simcity/i,"Симуляторы"],[/city story/i,"Симуляторы"],[/fashion story/i,"Симуляторы"],
-  [/subway surf/i,"Аркады"],[/angry birds/i,"Аркады"],[/worms/i,"Аркады"],[/smash hit/i,"Аркады"],[/ridiculous fishing/i,"Аркады"],[/hopeless/i,"Аркады"],[/voxel rush/i,"Аркады"],[/unpossible/i,"Аркады"],[/cytus/i,"Аркады"],[/sparkle/i,"Аркады"],[/sky gamblers/i,"Аркады"],[/fractal combat/i,"Аркады"],[/star wars pinball/i,"Аркады"],[/tilt to live/i,"Аркады"],[/colossatron/i,"Аркады"],[/rayman fiesta/i,"Аркады"],[/gunman clive/i,"Аркады"],[/garfield kart/i,"Аркады"],[/pac-man/i,"Аркады"],[/ninjump/i,"Аркады"],
-  [/world of goo/i,"Головоломки"],[/bad piggies/i,"Головоломки"],[/cut the rope/i,"Головоломки"],[/candy crush/i,"Головоломки"],[/super hexagon/i,"Головоломки"],[/the room/i,"Головоломки"],[/machinarium/i,"Головоломки"],[/little inferno/i,"Головоломки"],[/year walk/i,"Головоломки"],[/duet game/i,"Головоломки"],[/blek/i,"Головоломки"],[/the cave/i,"Головоломки"],[/icebreaker/i,"Головоломки"],[/incredipede/i,"Головоломки"],[/rube works/i,"Головоломки"],[/atlantis adventure/i,"Головоломки"],[/plants vs zombies/i,"Головоломки"],[/puzzle quest/i,"Головоломки"],
-  [/modern combat/i,"Экшн"],[/shadowgun/i,"Экшн"],[/n.o.v.a/i,"Экшн"],[/mass effect/i,"Экшн"],[/amazing spider-man/i,"Экшн"],[/dark knight rises/i,"Экшн"],[/max payne/i,"Экшн"],[/grand theft auto/i,"Экшн"],[/gta/i,"Экшн"],[/gangstar/i,"Экшн"],[/dead trigger/i,"Экшн"],[/dead effect/i,"Экшн"],[/deus ex/i,"Экшн"],[/batman/i,"Экшн"],[/injustice/i,"Экшн"],[/teenage mutant/i,"Экшн"],[/walking dead/i,"Экшн"],[/roblox/i,"Экшн"],[/terraria/i,"Экшн"],[/minecraft/i,"Экшн"],
-  [/xcom/i,"Стратегии"],[/great big war/i,"Стратегии"],[/great little war/i,"Стратегии"],[/squids/i,"Стратегии"],[/frozen synapse/i,"Стратегии"],[/crimson.*steam/i,"Стратегии"],[/guns.*glory/i,"Стратегии"],[/robo defense/i,"Стратегии"],[/battle for mars/i,"Стратегии"],[/military madness/i,"Стратегии"],[/everlands/i,"Стратегии"],[/spaceteam/i,"Стратегии"],[/arma tactics/i,"Стратегии"],
-  [/final fantasy/i,"RPG"],[/world ends with you/i,"RPG"],[/aralon/i,"RPG"],[/dungeon hunter/i,"RPG"],[/tales of/i,"RPG"],[/adventure bar/i,"RPG"],
-  [/fifa/i,"Спорт"],[/pes/i,"Спорт"],[/nba/i,"Спорт"],[/nhl/i,"Спорт"],[/madden/i,"Спорт"],[/tennis/i,"Спорт"],[/golf/i,"Спорт"],[/football/i,"Спорт"],[/soccer/i,"Спорт"],[/basketball/i,"Спорт"],
-  [/solitaire/i,"Карточные"],[/poker/i,"Карточные"],[/blackjack/i,"Карточные"],
-  [/chess/i,"Настольные"],[/checkers/i,"Настольные"],[/backgammon/i,"Настольные"],[/monopoly/i,"Настольные"],[/scrabble/i,"Настольные"],
-  [/doodle jump/i,"Казуальные"],[/fruit ninja/i,"Казуальные"],[/flappy bird/i,"Казуальные"],[/temple run/i,"Казуальные"],[/jetpack joyride/i,"Казуальные"],[/pou/i,"Казуальные"],[/talking tom/i,"Казуальные"],[/говорящий том/i,"Казуальные"],[/говорящий бен/i,"Казуальные"],
-  [/myst/i,"Приключения"],[/riven/i,"Приключения"],[/broken sword/i,"Приключения"],[/monkey island/i,"Приключения"],[/sam.*max/i,"Приключения"]
+  [/asphalt/i,"Гонки"],[/real racing/i,"Гонки"],[/need for speed/i,"Гонки"],[/the sims/i,"Симуляторы"],[/plague inc/i,"Симуляторы"],[/subway surf/i,"Аркады"],[/angry birds/i,"Аркады"],[/cut the rope/i,"Головоломки"],[/candy crush/i,"Головоломки"],[/modern combat/i,"Экшн"],[/gta/i,"Экшн"],[/minecraft/i,"Экшн"],[/xcom/i,"Стратегии"],[/final fantasy/i,"RPG"],[/fifa/i,"Спорт"],[/chess/i,"Настольные"],[/root explorer/i,"Инструменты"],[/total commander/i,"Инструменты"],[/youtube/i,"Мультимедиа"],[/tiktok/i,"Социальные"],[/telegram/i,"Связь"],[/vk/i,"Социальные"]
 ];
+function detectGenre(name, desc = ""){ for (const [re, genre] of GENRE_MAP) if (re.test(name) || (desc && re.test(desc))) return genre; return null; }
 
-function detectGenre(name){
-  for (const [re, genre] of GENRE_MAP) if (re.test(name)) return genre;
-  return null;
-}
-
-// ---------- Кэш и Настройки ----------
 let cache = { games: { pages: {} }, apps: { pages: {} } };
-let prefs = { genreStats: {}, optIcons: false, optRecommend: true };
+let prefs = { genreStats: {}, optTegra: false };
 
 function loadData() {
   try {
-    const c = localStorage.getItem(CACHE_KEY);
-    if (c) cache = JSON.parse(c);
-    const p = localStorage.getItem(PREFS_KEY);
-    if (p) prefs = { ...prefs, ...JSON.parse(p) };
-  } catch (e) { console.log("Ошибка загрузки локальных данных"); }
+    const c = localStorage.getItem(CACHE_KEY); if (c) cache = JSON.parse(c);
+    const p = localStorage.getItem(PREFS_KEY); if (p) prefs = { ...prefs, ...JSON.parse(p) };
+  } catch (e) { console.log("Ошибка загрузки"); }
 }
 function saveCache() { localStorage.setItem(CACHE_KEY, JSON.stringify(cache)); }
 function savePrefs() { localStorage.setItem(PREFS_KEY, JSON.stringify(prefs)); }
 
-// Применяем настройки
-const chkIcons = document.getElementById("optIcons");
-const chkRecommend = document.getElementById("optRecommend");
-if(chkIcons) {
-  chkIcons.checked = prefs.optIcons;
-  chkIcons.addEventListener("change", (e) => { prefs.optIcons = e.target.checked; savePrefs(); renderTable(); });
-}
-if(chkRecommend) {
-  chkRecommend.checked = prefs.optRecommend;
-  chkRecommend.addEventListener("change", (e) => { prefs.optRecommend = e.target.checked; savePrefs(); updateRecommended(); });
-}
+function trackGenreClick(genre) { if (!genre || genre === "—") return; prefs.genreStats[genre] = (prefs.genreStats[genre] || 0) + 1; savePrefs(); }
 
-function trackGenreClick(genre) {
-  if (!genre || genre === "—") return;
-  prefs.genreStats[genre] = (prefs.genreStats[genre] || 0) + 1;
-  savePrefs();
-}
-
-// ---------- Состояние ----------
-const seen = new Set();
-const all = [];
-let total=0, okPages=0, failPages=0, newGames=0, cachedGames=0;
-let isCancelled = false;
-
-// ---------- UI ----------
 const $ = id => document.getElementById(id);
 const logEl = $("log");
 function log(m){ logEl.textContent += m+"\n"; logEl.scrollTop = logEl.scrollHeight; }
@@ -294,69 +228,94 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 function updatePresetInfo(){
   const k = $("preset").value;
-  if (k === "custom") { $("customPanel").classList.remove("hidden"); $("presetInfo").textContent = "— введите характеристики ниже"; return; }
+  if (k === "custom") { $("customPanel").classList.remove("hidden"); return; }
   $("customPanel").classList.add("hidden");
-  const p = PRESETS[k];
-  $("presetInfo").textContent = p ? p.note : "";
 }
 $("preset").addEventListener("change", updatePresetInfo);
+$("cArm").addEventListener("change", renderTable);
+$("cApi").addEventListener("change", renderTable);
+$("optTegra").checked = prefs.optTegra;
+$("optTegra").addEventListener("change", (e) => { prefs.optTegra = e.target.checked; savePrefs(); renderTable(); });
 
 function getPreset(){
   const k = $("preset").value;
-  if (k === "custom") {
-    const armv6 = $("cArm").value === "v6";
-    const apiMax = parseInt($("cApi").value, 10);
-    const vendor = $("cVendor").value || "Custom";
-    const cpu = $("cCpu").value || ($("cFreq").value + " MHz");
-    return { name: vendor + " (" + cpu + ")", apiMax, armv6 };
-  }
+  if (k === "custom") return { name: "Custom", apiMax: parseInt($("cApi").value, 10), armv6: $("cArm").value === "v6" };
   return { key:k, ...PRESETS[k] };
 }
 
-// ---------- Умная загрузка ----------
+// ---------- Обычный счетчик (плавный перебор цифр) ----------
+function animateValue(elId, start, end) {
+  const obj = document.getElementById(elId);
+  if (!obj) return;
+  if (start === end) { obj.textContent = end; return; }
+
+  const range = end - start;
+  const duration = 400; // мс
+  const startTime = performance.now();
+
+  function update(currentTime) {
+    const elapsed = currentTime - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    // easeOutQuad для плавности
+    const easeOut = 1 - (1 - progress) * (1 - progress);
+    const current = Math.floor(start + range * easeOut);
+    
+    obj.textContent = current;
+
+    if (progress < 1) {
+      requestAnimationFrame(update);
+    } else {
+      obj.textContent = end;
+    }
+  }
+  requestAnimationFrame(update);
+}
+
+// ---------- Состояние ----------
+const seen = new Set();
+const all = [];
+let total=0, okPages=0, failPages=0, newGames=0, cachedGames=0;
+let isCancelled = false;
+const currentValues = { total:0, pagesOk:0, pagesFail:0, matching:0, good:0, armv6:0, yellow:0, api4:0, api7:0, api8:0, api10:0, api14:0 };
+
+// ---------- Фильтры ----------
+const BETA_RE = /\b(beta|alpha|demo|lite|preview|test|early access|бета|альфа|демо|тест)\b/i;
+function isFiltered(name) {
+  if (/minecraft.*alpha/i.test(name)) return false;
+  if (BETA_RE.test(name)) return true;
+  if (!prefs.optTegra && /\bTHD\b/i.test(name)) return true;
+  return false;
+}
+
 async function fetchWithTimeout(url, ms){
-  const ctrl = new AbortController();
-  const t = setTimeout(() => ctrl.abort(), ms);
+  const ctrl = new AbortController(); const t = setTimeout(() => ctrl.abort(), ms);
   try {
-    const r = await fetch(url, { credentials:"omit", signal: ctrl.signal });
-    clearTimeout(t);
+    const r = await fetch(url, { credentials:"omit", signal: ctrl.signal }); clearTimeout(t);
     if (!r.ok) throw new Error("HTTP " + r.status);
     return { ok:true, text: await r.text(), url: r.url };
-  } catch (e) {
-    clearTimeout(t);
-    return { ok:false, error: e.message };
-  }
+  } catch (e) { clearTimeout(t); return { ok:false }; }
 }
 
 async function fetchPageSmart(mode, page, pIndex, totalPages){
   const url = SITE + MODES[mode] + "&page=" + page;
-  
-  let maxAttempts = 5;
-  let timeoutMs = 5000;
-
-  if (pIndex < 5) { maxAttempts = 10; timeoutMs = 7000; } 
-  else if (pIndex > totalPages * 0.8) { maxAttempts = 2; timeoutMs = 3000; } 
-  
-  if (failPages > 3) { maxAttempts = Math.max(2, maxAttempts - 3); }
+  let maxAttempts = 3, timeoutMs = 5000;
+  if (pIndex < 5) { maxAttempts = 5; timeoutMs = 7000; } 
+  if (failPages > 3) { maxAttempts = Math.max(2, maxAttempts - 1); }
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     if (isCancelled) return null;
     const res = await fetchWithTimeout(url, timeoutMs);
     if (res.ok) return res.text;
-    
     try {
       const proxy = "https://api.allorigins.win/raw?url=" + encodeURIComponent(url);
       const res2 = await fetchWithTimeout(proxy, timeoutMs);
       if (res2.ok) return res2.text;
     } catch {}
-
-    log(`  ⚠ Попытка ${attempt}/${maxAttempts} не удалась...`);
     await sleep(500);
   }
   return null;
 }
 
-// ---------- Определение страниц ----------
 function detectFromText(html){
   const m = html.match(/Страница\s+\d+\s+из\s+(\d+)/i);
   if (m) return parseInt(m[1], 10);
@@ -366,25 +325,15 @@ function detectFromText(html){
 }
 
 async function determineLastPage(mode){
-  log("→ ищу «Страница X из Y»...");
   const r1 = await fetchPageSmart(mode, 1, 1, 100);
-  if (!r1) { log("✗ первая страница не загрузилась"); return null; }
-  
+  if (!r1) return null;
   const fromText = detectFromText(r1);
-  if (fromText){ log("✓ найдено в тексте: " + fromText); return fromText; }
-
-  log("→ текст не помог, пробую большой номер страницы...");
+  if (fromText) return fromText;
   const r2 = await fetchPageSmart(mode, BIG_PAGE, 1, 100);
-  if (!r2) { log("✗ большой номер не сработал"); return null; }
-  
-  const fromText2 = detectFromText(r2);
-  if (fromText2){ log("✓ по тексту ответа: " + fromText2); return fromText2; }
-
-  log("✗ не удалось определить число страниц");
-  return null;
+  if (!r2) return null;
+  return detectFromText(r2);
 }
 
-// ---------- Парсинг (ИСПРАВЛЕН) ----------
 function parseItems(html, pageNum){
   try {
     const doc = new DOMParser().parseFromString(html, "text/html");
@@ -402,297 +351,212 @@ function parseItems(html, pageNum){
         if (/^Скачиваний:/.test(l)||/^API\s/.test(l)) continue;
         name=l; break;
       }
-      if (name) items.push({ name, rating, api, foundOnPage: pageNum, iconUrl: null, gameUrl: null });
-    }
-    
-    // Попытка найти иконки и ссылки через DOM, если есть имена
-    if (items.length > 0) {
-      const allLinks = doc.querySelectorAll('a');
-      for (const item of items) {
-         // Ищем ссылку, текст которой содержит название игры (первые 10 символов)
-         const shortName = item.name.substring(0, 10).toLowerCase();
-         for (const a of allLinks) {
-            if (a.textContent.toLowerCase().includes(shortName)) {
-                item.gameUrl = a.href;
-                const img = a.querySelector('img');
-                if (img) item.iconUrl = img.src;
-                break;
-            }
-         }
-      }
+      if (name) items.push({ name, rating, api, foundOnPage: pageNum });
     }
     return items;
-  } catch (e) {
-    console.error("Ошибка парсинга:", e);
-    return [];
-  }
+  } catch (e) { return []; }
 }
 
-// ---------- ARMv6 ----------
-const BETA_RE = /\b(beta|alpha|demo|preview|test|early access|бета|альфа|демо|тест)\b/i;
 const KNOWN_ARMV7 = [/minecraft/i,/subway surf/i,/geometry dash/i,/plants vs zombies/i,/temple run/i,/cut the rope/i,/fruit ninja/i,/angry birds/i,/doodle jump/i,/hungry shark/i,/modern combat/i,/real racing/i,/need for speed/i,/asphalt/i];
 const KNOWN_X8_WORK = [/cuttheburmalda/i,/burmaldamods/i,/peKORA/i,/говорящий бен/i,/говорящий том/i,/говорящая анджела/i,/говорящий ларри/i,/говорящий санта/i,/talking roby/i,/talking tom bubble/i,/retro brawl/i,/exploration/i,/rover craft/i,/doodle army/i,/джинджер/i,/говорящий хиппо/i,/angry viking/i,/train crisis/i,/inertia/i,/escape velocity/i];
 function looksHeavy(n){ return /3d|hd|race|racing|shooter|fps|mmo|online|battle royale|pubg|asphalt|need for speed|modern combat/i.test(n.toLowerCase()); }
 function classifyArmv6(name, api){
-  if (api>8) return "red";
-  if (api<8) return looksHeavy(name)?"blue":"green";
+  if (api>8) return "red"; if (api<8) return looksHeavy(name)?"blue":"green";
   for (const re of KNOWN_ARMV7) if (re.test(name)) return "red";
   for (const re of KNOWN_X8_WORK) if (re.test(name)) return "green";
-  if (looksHeavy(name)) return "yellow";
-  return "blue";
+  if (looksHeavy(name)) return "yellow"; return "blue";
 }
 
-// ---------- Отрисовка ----------
 function armLabel(a){ return a==="green"?"🟢 пойдёт":a==="yellow"?"🟡 может":a==="red"?"🔴 нет":"🔵 ?"; }
-
 function smartSort(a, b) {
-  const isDigitSym = (str) => /^[^a-zA-Zа-яА-Я]/.test(str);
-  const isEng = (str) => /^[a-zA-Z]/.test(str);
+  const isDigitSym = (str) => /^[^a-zA-Zа-яА-Я]/.test(str); const isEng = (str) => /^[a-zA-Z]/.test(str);
   const aN = a.name.trim(), bN = b.name.trim();
-  
-  if (isDigitSym(aN) && !isDigitSym(bN)) return -1;
-  if (!isDigitSym(aN) && isDigitSym(bN)) return 1;
-  
-  if (isEng(aN) && !isEng(bN)) return -1;
-  if (!isEng(aN) && isEng(bN)) return 1;
-  
+  if (isDigitSym(aN) && !isDigitSym(bN)) return -1; if (!isDigitSym(aN) && isDigitSym(bN)) return 1;
+  if (isEng(aN) && !isEng(bN)) return -1; if (!isEng(aN) && isEng(bN)) return 1;
   return aN.localeCompare(bN);
 }
 
 function renderTable(){
-  const mode = $("mode").value;
-  const category = $("category").value;
-  const preset = getPreset();
-  const searchQ = $("searchInput").value.toLowerCase().trim();
-  const sortBy = $("sortSelect").value;
+  const mode = $("mode").value; const category = $("category").value; const preset = getPreset();
+  const searchQ = $("searchInput").value.toLowerCase().trim(); const sortBy = $("sortSelect").value;
 
-  const tb = document.querySelector("#result tbody");
-  tb.innerHTML = "";
+  const thArmv6 = $("thArmv6");
+  if (preset.armv6) thArmv6.classList.remove("hidden"); else thArmv6.classList.add("hidden");
 
+  const tb = document.querySelector("#result tbody"); tb.innerHTML = "";
   let filtered = all.filter(g => g.api <= preset.apiMax && (category === "all" || g.genre === category));
-  
-  if (searchQ) {
-    filtered = filtered.filter(g => g.name.toLowerCase().includes(searchQ));
-  }
-
-  if (sortBy === "rating") {
-    filtered.sort((a,b) => (b.rating||0) - (a.rating||0));
-  } else if (sortBy === "name") {
-    filtered.sort(smartSort);
-  }
+  if (searchQ) filtered = filtered.filter(g => g.name.toLowerCase().includes(searchQ));
+  if (sortBy === "rating") filtered.sort((a,b) => (b.rating||0) - (a.rating||0));
+  else if (sortBy === "name") filtered.sort(smartSort);
 
   for (const g of filtered) {
     const tr = document.createElement("tr");
     tr.className = g.arm === "green" ? "green" : g.arm === "yellow" ? "yellow" : g.arm === "red" ? "red" : "blue";
-    const r = g.rating!=null ? g.rating.toFixed(1) : "—";
-    const star = (g.rating||0)>=4 ? " ⭐" : "";
-    const arm = preset.armv6 ? armLabel(g.arm) : "—";
-    
-    const link = g.gameUrl ? g.gameUrl : SITE + MODES[mode] + "&page=" + g.foundOnPage;
-    
-    let iconHtml = "";
-    if (prefs.optIcons && g.iconUrl) {
-      iconHtml = `<img src="${g.iconUrl}" style="width:20px; height:20px; vertical-align:middle; margin-right:6px; border-radius:4px;" onerror="this.style.display='none'">`;
-    }
+    const r = g.rating!=null ? g.rating.toFixed(1) : "—"; const star = (g.rating||0)>=4 ? " ⭐" : "";
+    let armTd = preset.armv6 ? `<td>${armLabel(g.arm)}</td>` : "";
 
     tr.innerHTML = `
-      <td class="${g.rating>=4?'good':''}">${iconHtml}<a href="${link}" target="_blank" onclick="trackGenreClick('${g.genre}')">${g.name}</a>${star}</td>
+      <td class="${g.rating>=4?'good':''}" onclick="trackGenreClick('${g.genre || ""}')">${g.name}${star}</td>
       <td class="col-hide-mobile">${g.genre || "—"}</td>
       <td>${r}</td>
       <td>${g.api}</td>
-      <td>${arm}</td>
+      ${armTd}
       <td><a href="${SITE + MODES[mode] + "&page=" + g.foundOnPage}" target="_blank">стр. ${g.foundOnPage}</a></td>
     `;
     tb.appendChild(tr);
   }
 }
 
-function updateRecommended(){
-  const wrap = $("recommendedWrap");
-  const tb = $("recBody");
+function updateRecommended(preset) {
+  const wrap = $("recommendedWrap"); const tb = $("recBody");
+  if (Object.keys(prefs.genreStats).length === 0) { wrap.classList.add("hidden"); return; }
+
+  let topGenre = null, maxCount = 0;
+  for (const [g, count] of Object.entries(prefs.genreStats)) if (count > maxCount) { maxCount = count; topGenre = g; }
   
-  if (!prefs.optRecommend || Object.keys(prefs.genreStats).length === 0) {
-    wrap.classList.add("hidden");
-    return;
-  }
-
-  let topGenre = null;
-  let maxCount = 0;
-  for (const [g, count] of Object.entries(prefs.genreStats)) {
-    if (count > maxCount) { maxCount = count; topGenre = g; }
-  }
-
-  const preset = getPreset();
+  if (!topGenre) { wrap.classList.add("hidden"); return; }
   const recs = all.filter(g => g.genre === topGenre && g.api <= preset.apiMax).slice(0, 5); 
 
   if (recs.length === 0) { wrap.classList.add("hidden"); return; }
-  
-  wrap.classList.remove("hidden");
-  tb.innerHTML = "";
+  wrap.classList.remove("hidden"); tb.innerHTML = "";
   for (const g of recs) {
     const tr = document.createElement("tr");
-    const link = g.gameUrl ? g.gameUrl : SITE + MODES[$("mode").value] + "&page=" + g.foundOnPage;
-    tr.innerHTML = `
-      <td><a href="${link}" target="_blank" onclick="trackGenreClick('${g.genre}')">${g.name}</a></td>
-      <td class="col-hide-mobile">${g.genre}</td>
-      <td>${g.rating ? g.rating.toFixed(1) : "—"}</td>
-      <td>${g.api}</td>
-      <td>${getPreset().armv6 ? armLabel(g.arm) : "—"}</td>
-      <td><a href="${SITE + MODES[$("mode").value] + "&page=" + g.foundOnPage}" target="_blank">стр. ${g.foundOnPage}</a></td>
-    `;
+    tr.innerHTML = `<td>${g.name}</td><td>${g.genre}</td><td>${g.rating ? g.rating.toFixed(1) : "—"}</td><td>${g.api}</td><td>стр. ${g.foundOnPage}</td>`;
     tb.appendChild(tr);
   }
 }
 
 function updateSummary(preset, category, mode, newG = 0, cachedG = 0){
+  const summaryEl = $("summary");
+  summaryEl.style.display = "block";
+
   let matching = all.filter(g => g.api <= preset.apiMax);
   if (category !== "all") matching = matching.filter(g => g.genre === category);
   const good = matching.filter(g => (g.rating||0)>=4);
   const green = matching.filter(g => g.arm==="green");
   const yellow = matching.filter(g => g.arm==="yellow");
 
-  let html = `<b>Раздел:</b> ${mode==="games"?"Игры":"Приложения"} | `;
-  html += `<b>Категория:</b> ${category} | `;
-  html += `<b>Телефон:</b> ${preset.name} (API ≤ ${preset.apiMax})<br>`;
-  html += `Страниц: ${okPages} ок, ${failPages} ошибок<br>`;
-  html += `Уникальных всего: <b>${total}</b> (из кэша: ${cachedG}, новых: ${newG})<br>`;
-  html += `Подходят (API + категория): <b>${matching.length}</b><br>`;
-  html += `«Хорошие» (≥4★): <b>${good.length}</b><br>`;
-  if (preset.armv6){
-    html += `🟢 ARMv6 точно: <b>${green.length}</b><br>`;
-    html += `🟡 ARMv6 может: <b>${yellow.length}</b><br>`;
+  const api4 = matching.filter(g => g.api <= 4).length;
+  const api7 = matching.filter(g => g.api <= 7).length;
+  const api8 = matching.filter(g => g.api <= 8).length;
+  const api10 = matching.filter(g => g.api <= 10).length;
+  const api14 = matching.filter(g => g.api <= 14).length;
+
+  if (summaryEl.innerHTML === "") {
+    let html = `<b>Раздел:</b> ${mode==="games"?"Игры":"Приложения"} | <b>Телефон:</b> ${preset.name}<br>`;
+    html += `Страниц: <span id="scOk"></span> ок, <span id="scFail"></span> ошибок<br>`;
+    html += `Уникальных: <b><span id="scTotal"></span></b> (кэш: <span id="scCached"></span>, новых: <span id="scNew"></span>)<br>`;
+    html += `Подходят: <b><span id="scMatching"></span></b> | Хорошие: <b><span id="scGood"></span></b><br>`;
+    
+    if (preset.armv6) {
+      html += `🟢 ARMv6: <b><span id="scGreen"></span></b> | 🟡 Может: <b><span id="scYellow"></span></b><br>`;
+    } else {
+      html += `<br><b>Статистика по API:</b><br>`;
+      html += `≤ 1.6 (API 4): <b><span id="scApi4"></span></b><br>`;
+      html += `≤ 2.1 (API 7): <b><span id="scApi7"></span></b><br>`;
+      html += `≤ 2.2 (API 8): <b><span id="scApi8"></span></b><br>`;
+      html += `≤ 2.3 (API 10): <b><span id="scApi10"></span></b><br>`;
+      html += `≤ 4.0 (API 14): <b><span id="scApi14"></span></b><br>`;
+    }
+    summaryEl.innerHTML = html;
   }
-  $("summary").innerHTML = html;
-}
 
-const GROUPS = [
-  {label:"Android 1.6 и ниже", color:"#888",    test:a=>a<=4},
-  {label:"Android 2.1+",       color:"#e67e22", test:a=>a===7},
-  {label:"Android 2.2+",       color:"#27ae60", test:a=>a===8},
-  {label:"Android 2.3+",       color:"#2980b9", test:a=>a===9||a===10},
-  {label:"Android 4.0+ и выше",color:"#8e44ad", test:a=>a>=14}
-];
-function drawChart(){
-  const c = $("chart"), ctx = c.getContext("2d");
-  const W=c.width, H=c.height; ctx.clearRect(0,0,W,H);
-  const counts = GROUPS.map(gr => all.filter(g=>gr.test(g.api)).length);
-  const maxC = Math.max(1,...counts);
-  const pL=60,pR=20,pT=20,pB=60, pw=W-pL-pR, ph=H-pT-pB;
+  if ($("scOk")) {
+    animateValue("scOk", currentValues.pagesOk, okPages); animateValue("scFail", currentValues.pagesFail, failPages);
+    animateValue("scTotal", currentValues.total, total); animateValue("scCached", currentValues.cached, cachedG);
+    animateValue("scNew", currentValues.new, newG); animateValue("scMatching", currentValues.matching, matching.length);
+    animateValue("scGood", currentValues.good, good.length);
+    
+    if (preset.armv6) {
+      animateValue("scGreen", currentValues.armv6, green.length); animateValue("scYellow", currentValues.yellow || 0, yellow.length);
+    } else {
+      animateValue("scApi4", currentValues.api4, api4); animateValue("scApi7", currentValues.api7, api7);
+      animateValue("scApi8", currentValues.api8, api8); animateValue("scApi10", currentValues.api10, api10);
+      animateValue("scApi14", currentValues.api14, api14);
+    }
+  }
 
-  ctx.strokeStyle="#999"; ctx.beginPath(); ctx.moveTo(pL,pT); ctx.lineTo(pL,H-pB); ctx.lineTo(W-pR,H-pB); ctx.stroke();
-  ctx.fillStyle="#666"; ctx.font="12px sans-serif"; ctx.textAlign="right";
-  for(let i=0;i<=5;i++){ const v=Math.round(maxC*i/5); const y=H-pB-ph*i/5; ctx.fillText(v,pL-6,y+4); ctx.strokeStyle="#eee"; ctx.beginPath(); ctx.moveTo(pL,y); ctx.lineTo(W-pR,y); ctx.stroke(); }
-  ctx.textAlign="center"; ctx.fillStyle="#333";
-  const sx = pw/(GROUPS.length-1||1);
-  GROUPS.forEach((gr,i)=>{ const x=pL+sx*i; const w=gr.label.split(" "); ctx.fillText(w[0],x,H-pB+18); ctx.fillText(w.slice(1).join(" "),x,H-pB+34); });
-  ctx.strokeStyle="#27ae60"; ctx.lineWidth=2; ctx.beginPath();
-  GROUPS.forEach((gr,i)=>{ const x=pL+sx*i; const y=H-pB-ph*counts[i]/maxC; i?ctx.lineTo(x,y):ctx.moveTo(x,y); });
-  ctx.stroke();
-  GROUPS.forEach((gr,i)=>{ const x=pL+sx*i; const y=H-pB-ph*counts[i]/maxC; ctx.fillStyle=gr.color; ctx.beginPath(); ctx.arc(x,y,5,0,Math.PI*2); ctx.fill(); ctx.fillStyle="#000"; ctx.font="bold 12px sans-serif"; ctx.fillText(counts[i],x,y-10); });
-  ctx.fillStyle="#000"; ctx.font="bold 14px sans-serif"; ctx.textAlign="left"; ctx.fillText("Количество по версиям Android",pL,pT-4);
+  currentValues.pagesOk = okPages; currentValues.pagesFail = failPages; currentValues.total = total;
+  currentValues.cached = cachedG; currentValues.new = newG; currentValues.matching = matching.length;
+  currentValues.good = good.length;
+  if (preset.armv6) {
+    currentValues.armv6 = green.length; currentValues.yellow = yellow.length;
+  } else {
+    currentValues.api4 = api4; currentValues.api7 = api7; currentValues.api8 = api8;
+    currentValues.api10 = api10; currentValues.api14 = api14;
+  }
 }
 
 async function run(){
-  const mode = $("mode").value;
-  const category = $("category").value;
-  const preset = getPreset();
+  const mode = $("mode").value; const category = $("category").value; const preset = getPreset();
+  $("start").disabled = true; $("cancel").classList.remove("hidden");
+  $("progressWrap").style.display = "block"; $("progressBar").style.width = "0%"; $("progressBar").style.background = "var(--header-bg)";
+  $("progressText").textContent = "Определение страниц..."; $("resultWrap").classList.add("hidden");
+  $("summary").style.display = "none"; $("summary").innerHTML = "";
 
-  $("start").disabled = true;
-  $("cancel").classList.remove("hidden");
-  $("progressWrap").style.display = "block";
-  $("progressBar").style.width = "0%";
-  $("progressBar").style.background = "var(--btn)";
-  $("progressText").textContent = "Определение страниц...";
-  $("resultWrap").style.display = "none";
-  
-  logEl.textContent = ""; $("summary").innerHTML = "";
-  seen.clear(); all.length = 0;
-  total=0; okPages=0; failPages=0; newGames=0; cachedGames=0;
-  isCancelled = false;
+  logEl.textContent = ""; seen.clear(); all.length = 0;
+  total=0; okPages=0; failPages=0; newGames=0; cachedGames=0; isCancelled = false;
+  for (let key in currentValues) currentValues[key] = 0;
 
   const lastPage = await determineLastPage(mode);
-  if (!lastPage || isCancelled){
-    if (!isCancelled) log("✗ не удалось определить число страниц");
-    $("start").disabled = false;
-    $("cancel").classList.add("hidden");
-    $("progressText").textContent = isCancelled ? "Отменено" : "Ошибка";
-    return;
-  }
-  
-  log("Всего страниц: " + lastPage);
+  if (!lastPage || isCancelled){ $("start").disabled = false; $("cancel").classList.add("hidden"); return; }
   if (!cache[mode].pages) cache[mode].pages = {};
 
   for (let p=1; p<=lastPage; p++){
     if (isCancelled) break;
-
-    const pageKey = "p" + p;
-    let items = [];
-    let isCached = false;
-
-    if (cache[mode].pages[pageKey]) {
-      items = cache[mode].pages[pageKey];
-      isCached = true;
-      log(`→ ${p}/${lastPage}... (кэш)`);
-    } else {
-      log(`→ ${p}/${lastPage}... (загрузка)`);
+    const pageKey = "p" + p; let items = [], isCached = false;
+    if (cache[mode].pages[pageKey]) { items = cache[mode].pages[pageKey]; isCached = true; }
+    else {
+      log(`→ ${p}/${lastPage}...`);
       const html = await fetchPageSmart(mode, p, p, lastPage);
       if (!html){ failPages++; await sleep(200); continue; }
-      
       items = parseItems(html, p);
       if (!items.length){ failPages++; await sleep(200); continue; }
       cache[mode].pages[pageKey] = items;
     }
-    
     okPages++;
     for (const g of items){
-      const key=g.name.toLowerCase().trim();
-      if (seen.has(key)) continue;
-      seen.add(key);
-      if (BETA_RE.test(g.name)) continue;
-      
-      g.genre = detectGenre(g.name);
-      g.arm = classifyArmv6(g.name, g.api);
-      all.push(g); total++;
-      
-      if (isCached) cachedGames++; else newGames++;
+      const key=g.name.toLowerCase().trim(); if (seen.has(key)) continue; seen.add(key);
+      if (isFiltered(g.name)) continue;
+      g.genre = detectGenre(g.name); g.arm = classifyArmv6(g.name, g.api);
+      all.push(g); total++; if (isCached) cachedGames++; else newGames++;
     }
-    
     const percent = Math.round((p / lastPage) * 100);
-    $("progressBar").style.width = percent + "%";
-    $("progressText").textContent = `Сканирование... ${p} / ${lastPage} (${percent}%)`;
+    $("progressBar").style.width = percent + "%"; $("progressText").textContent = `Сканирование... ${p} / ${lastPage} (${percent}%)`;
     updateSummary(preset, category, mode, newGames, cachedGames);
-    
     if (!isCached) await sleep(200);
   }
   
+  // Сохраняем кэш даже при отмене
   saveCache();
   
-  $("resultWrap").style.display = "block";
-  renderTable();
-  updateRecommended();
-  drawChart();
+  $("resultWrap").classList.remove("hidden"); 
+  renderTable(); 
+  updateRecommended(preset);
   updateSummary(preset, category, mode, newGames, cachedGames);
   
-  $("start").disabled = false;
-  $("cancel").classList.add("hidden");
-  $("progressBar").style.width = isCancelled ? `${Math.round((okPages/lastPage)*100)}%` : "100%";
-  if (!isCancelled) $("progressBar").style.background = "#27ae60";
-  $("progressText").textContent = isCancelled ? "Сканирование отменено" : `Готово! Страниц: ${lastPage}`;
+  $("start").disabled = false; $("cancel").classList.add("hidden");
+  $("progressBar").style.width = "100%"; $("progressBar").style.background = "#27ae60"; $("progressText").textContent = `Готово!`;
 }
 
 $("start").addEventListener("click", run);
-$("cancel").addEventListener("click", () => {
-  isCancelled = true;
-  log("🛑 Отмена...");
+$("cancel").addEventListener("click", () => { 
+  isCancelled = true; 
+  log("🛑 Отмена..."); 
+  saveCache(); // Принудительное сохранение при отмене
 });
-$("searchInput").addEventListener("input", renderTable);
-$("sortSelect").addEventListener("change", renderTable);
-$("mode").addEventListener("change", renderTable);
-$("category").addEventListener("change", renderTable);
-$("preset").addEventListener("change", renderTable);
+$("searchInput").addEventListener("input", renderTable); $("sortSelect").addEventListener("change", renderTable);
+$("mode").addEventListener("change", renderTable); $("category").addEventListener("change", renderTable); $("preset").addEventListener("change", renderTable);
 
-loadData();
-updatePresetInfo();
+$("clearCache").addEventListener("click", () => {
+  if (confirm("Очистить весь кэш? Придется заново сканировать страницы.")) {
+    localStorage.removeItem(CACHE_KEY);
+    cache = { games: { pages: {} }, apps: { pages: {} } };
+    alert("Кэш очищен!");
+  }
+});
+
+loadData(); updatePresetInfo();
 </script>
 </body>
 </html>
